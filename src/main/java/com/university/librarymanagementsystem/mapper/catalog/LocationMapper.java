@@ -9,7 +9,8 @@ public class LocationMapper {
         return new LocationDTO(
                 location.getId(),
                 location.getLocationCodeName(),
-                location.getLocationName());
+                location.getLocationName(),
+                location.getStatus());
     }
 
     public static Location mapToEntity(LocationDTO locDto) {
@@ -17,6 +18,7 @@ public class LocationMapper {
         loc.setId(locDto.getId());
         loc.setLocationCodeName(locDto.getLocationCodeName());
         loc.setLocationName(locDto.getLocationName());
+        loc.setStatus(locDto.getStatus());
         return loc;
 
     }

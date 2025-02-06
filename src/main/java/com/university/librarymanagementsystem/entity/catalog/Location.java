@@ -1,5 +1,7 @@
 package com.university.librarymanagementsystem.entity.catalog;
 
+import javax.swing.text.StyledEditorKit.BoldAction;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -27,5 +29,6 @@ public class Location {
     @Column(name = "location_code", length = 3)
     private String locationCodeName;
     private String locationName;
+    private Boolean status;
 
 }
