@@ -210,7 +210,7 @@ public class LoanServiceImpl implements LoanService {
                 StakeHolders stakeHolders = stakeHolderRepository.findById(reserves.getUser().getSchoolId())
                         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
                 // Send an email to the user
-                emailService.sendEmail(stakeHolders.getEmailAdd(), "Reservation Available", book.getTitle(), "");
+                emailService.sendEmail(stakeHolders.getEmailAdd(), "Reserved", book.getTitle(), "");
             }
             // Email for returning
             emailService.sendEmail(loanStakeHolders.getEmailAdd(), "Returned", book.getTitle(), "");
