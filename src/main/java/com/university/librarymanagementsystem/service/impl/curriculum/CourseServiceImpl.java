@@ -71,16 +71,16 @@ public class CourseServiceImpl implements CourseService {
             Course existingCourse = courseRepository.findById(course.getCourse_id()).orElse(null);
 
             if (existingCourse != null) {
-                if (existingCourse.getCourse_code().equals(course.getCourse_code()) &&
-                        existingCourse.getCourse_name().equals(course.getCourse_name()) &&
-                        existingCourse.getYear_level() == course.getYear_level()) {
-                    throw new DuplicateEntryException("Course with same data already exists.");
-                } else {
+                // Skip if the course code, name, and year level are the same
+                if (!existingCourse.getCourse_code().equals(course.getCourse_code()) ||
+                        !existingCourse.getCourse_name().equals(course.getCourse_name()) ||
+                        existingCourse.getYear_level() != course.getYear_level()) {
                     courseToUpdate.add(course);
                 }
             } else {
                 courseToSave.add(course);
             }
+
         }
 
         List<Course> savedCourse = new ArrayList<>();

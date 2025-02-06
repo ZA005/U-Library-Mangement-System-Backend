@@ -73,9 +73,8 @@ public class ProgramServiceImpl implements ProgramService {
             Program existingProgram = programRepository.findById(program.getProgram_id()).orElse(null);
             System.out.println(existingProgram);
             if (existingProgram != null) {
-                if (existingProgram.getDescription().equals(program.getDescription())) {
-                    throw new DuplicateEntryException("Program with the same description already exists.");
-                } else {
+                // Skip if the description is the same (handle duplicate gracefully)
+                if (!existingProgram.getDescription().equals(program.getDescription())) {
                     programsToUpdate.add(program);
                 }
             } else {
