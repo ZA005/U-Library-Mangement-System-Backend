@@ -14,4 +14,5 @@ public class LocationDTO {
     private int id;
     private String locationCodeName;
     private String locationName;
+    private Boolean status;
 }

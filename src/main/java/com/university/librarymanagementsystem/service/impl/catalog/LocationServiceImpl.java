@@ -23,7 +23,6 @@ public class LocationServiceImpl implements LocationService {
         return locationRepository.findAll().stream()
                 .map(LocationMapper::mapToDto)
                 .toList();
-
     }
 
     @Override
@@ -42,6 +41,14 @@ public class LocationServiceImpl implements LocationService {
             throw new ResourceNotFoundException("Location not found for id: " + id);
         }
         locationRepository.deleteById(id);
+    }
+
+    @Override
+    public Location updateLocationStatus(int id, boolean status) {
+        Location location = locationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Location not found with id: " + id));
+        location.setStatus(status);
+        return locationRepository.save(location);
     }
 
 }
