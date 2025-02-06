@@ -44,12 +44,11 @@ public class DepartmentServiceImpl implements DepartmentService {
 
             if (existingDepartment != null) {
                 // If the department exists, check if the name is the same
-                if (existingDepartment.getName().equals(department.getName())) {
-                    throw new DuplicateEntryException("Department with the same name already exists.");
-                } else {
+                if (!existingDepartment.getName().equals(department.getName())) {
                     // If the name is different, prepare for update
                     departmentsToUpdate.add(department);
                 }
+                // If the name is the same, skip the duplicate
             } else {
                 // If the department does not exist, add it to the save list
                 departmentsToSave.add(department);
@@ -62,7 +61,7 @@ public class DepartmentServiceImpl implements DepartmentService {
             savedDepartments = departmentRepository.saveAll(departmentsToSave);
         }
 
-        // If there are updates, handle them (currently, update logic seems missing)
+        // Save updated departments
         if (!departmentsToUpdate.isEmpty()) {
             departmentRepository.saveAll(departmentsToUpdate); // Saving updated departments
         }

@@ -46,16 +46,17 @@ public class CurriculumServiceImpl implements CurriculumService {
             Curriculum existingCurriculum = currRepo.findById(curriculum.getId()).orElse(null);
             // System.out.println("Exisiting Curriculum " + existingCurriculum.getId());
             if (existingCurriculum != null) {
-                if (existingCurriculum.getRevision_no() == curriculum.getRevision_no() &&
+                // Skip if all relevant fields (revision_no, effectivity_sem, effectivity_sy)
+                // are the same
+                if (!(existingCurriculum.getRevision_no() == curriculum.getRevision_no() &&
                         existingCurriculum.getEffectivity_sem() == curriculum.getEffectivity_sem() &&
-                        existingCurriculum.getEffectivity_sy().equals(curriculum.getEffectivity_sy())) {
-                    throw new DuplicateEntryException("Curriculum with same data already exists.");
-                } else {
+                        existingCurriculum.getEffectivity_sy().equals(curriculum.getEffectivity_sy()))) {
                     curriculumToUpdate.add(curriculum);
                 }
             } else {
                 curriculumToSave.add(curriculum);
             }
+
         }
 
         List<Curriculum> savedCurriculum = new ArrayList<>();
