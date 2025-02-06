@@ -68,7 +68,7 @@ public class StakeHolderController {
     }
 
     // User details
-    @GetMapping("/adminuser/{id}")
+    @GetMapping("/verify/librarycard/{id}")
     public ResponseEntity<UserDetailsDto> getUserDetails(@PathVariable("id") String id) {
         UserDetailsDto userDetailsDto = stakeHolderService.getUserDetails(id);
         return ResponseEntity.ok(userDetailsDto);
