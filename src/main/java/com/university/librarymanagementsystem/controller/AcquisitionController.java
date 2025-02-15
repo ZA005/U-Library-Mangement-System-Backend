@@ -7,6 +7,7 @@ import com.university.librarymanagementsystem.dto.AcquisitionDTO;
 import com.university.librarymanagementsystem.service.AcquisitionService;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,10 +26,19 @@ public class AcquisitionController {
     private AcquisitionService acquisitionService;
 
     @PostMapping("/add-record")
-    public ResponseEntity<List<AcquisitionDTO>> addRecords(@RequestBody List<AcquisitionDTO> acquisitionDTOs) {
-        List<AcquisitionDTO> savedRecords = acquisitionService.addRecords(acquisitionDTOs);
-
-        return new ResponseEntity<>(savedRecords, HttpStatus.CREATED);
+    public ResponseEntity<?> addRecords(@RequestBody List<AcquisitionDTO> acquisitionDTOs) {
+        try {
+            List<AcquisitionDTO> savedRecords = acquisitionService.addRecords(acquisitionDTOs);
+            return new ResponseEntity<>(savedRecords, HttpStatus.CREATED);
+        } catch (IllegalStateException ex) {
+            // Return conflict status with error message
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "Duplicate record detected", "message", ex.getMessage()));
+        } catch (Exception ex) {
+            // Return generic server error with message
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "An unexpected error occurred", "message", ex.getMessage()));
+        }
     }
 
     @GetMapping("/pending")
