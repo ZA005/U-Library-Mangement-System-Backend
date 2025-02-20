@@ -35,12 +35,12 @@ public class LoanController {
         return ResponseEntity.ok(loanService.getAllLoanWithBorrowedStatus());
     }
 
-    @GetMapping("/admin/borrower-details/{idNumber}")
+    @GetMapping("/adminuser/borrower-details/{idNumber}")
     public BorrowerDetailsDto getBorrowerDetails(@PathVariable("idNumber") String idNumber) {
         return loanService.getBorrowerDetails(idNumber);
     }
 
-    @PostMapping("/admin/save-loan")
+    @PostMapping("/adminuser/save-loan")
     public ResponseEntity<Loans> saveLoan(@RequestBody LoanDetailsDTO loanDetailsDto) {
         return ResponseEntity.ok(loanService.saveLoan(loanDetailsDto));
     }

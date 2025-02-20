@@ -83,4 +83,6 @@ public interface BookRepository extends JpaRepository<Book, Long>, BookRepositor
                         """, nativeQuery = true)
         List<Book> findAllBooksUniqueOnly();
 
+        List<Book> findBooksByIsbn13(String isbn13);
+
 }

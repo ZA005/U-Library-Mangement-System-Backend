@@ -2,7 +2,6 @@ package com.university.librarymanagementsystem.service.impl.catalog;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,13 +25,18 @@ public class BookServiceImpl implements BookService {
     @Override
     public List<BookDto> getAllBooks() {
         List<Book> books = bookRepository.findAll();
-        return books.stream().map(BookMapper::toDto).toList();
+        return books.stream()
+                .filter(book -> !book.getStatus().equals("WEEDED") && !book.getStatus().equals("ARCHIVED"))
+                .map(BookMapper::toDto)
+                .toList();
     }
 
     @Override
     public List<BookDto> getBooksByAuthorName(String authorName) {
         List<Book> books = bookRepository.findBooksByAuthorName(authorName);
-        return books.stream().map(BookMapper::toDto).toList();
+        return books.stream()
+                .filter(book -> !book.getStatus().equals("WEEDED") && !book.getStatus().equals("ARCHIVED"))
+                .map(BookMapper::toDto).toList();
     }
 
     @Override
@@ -185,6 +189,14 @@ public class BookServiceImpl implements BookService {
         return books.stream()
                 .map(BookMapper::mapToAccessionDTO)
                 .toList();
+    }
+
+    @Override
+    public List<BookDto> getBooksByIsbn13(String isbn13) {
+        List<Book> books = bookRepository.findBooksByIsbn13(isbn13);
+        return books.stream()
+                .filter(book -> !book.getStatus().equals("WEEDED") && !book.getStatus().equals("ARCHIVED"))
+                .map(BookMapper::toDto).toList();
     }
 
 }
