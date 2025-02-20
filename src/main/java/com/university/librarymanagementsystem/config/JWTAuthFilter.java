@@ -11,7 +11,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.university.librarymanagementsystem.service.impl.user.MyUserDetailsService;
+import com.university.librarymanagementsystem.service.impl.user.AuthenticationImpl;
 import com.university.librarymanagementsystem.service.user.JWTUtils;
 
 import jakarta.servlet.FilterChain;
@@ -26,7 +26,7 @@ public class JWTAuthFilter extends OncePerRequestFilter {
     private JWTUtils jwtUtils;
 
     @Autowired
-    private MyUserDetailsService myUserDetailsService;
+    private AuthenticationImpl authService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -54,7 +54,7 @@ public class JWTAuthFilter extends OncePerRequestFilter {
         userEmail = jwtUtils.extractUsername(jwtToken); // Extract user email from token
 
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = myUserDetailsService.loadUserByUsername(userEmail);
+            UserDetails userDetails = authService.loadUserByUsername(userEmail);
 
             // Validate the token
             if (jwtUtils.isTokenValid(jwtToken, userDetails)) {
