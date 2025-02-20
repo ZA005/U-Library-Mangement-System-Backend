@@ -55,7 +55,6 @@ public class Book {
     private String printType;
 
     private String status;
-    private String barcode;
     private String callNumber;
     private Double purchasePrice;
     private String section;
@@ -66,5 +65,6 @@ public class Book {
     private String fundingSource;
     private String subjects;
     private String collectionType;
+    private String bookCondition;
 
 }

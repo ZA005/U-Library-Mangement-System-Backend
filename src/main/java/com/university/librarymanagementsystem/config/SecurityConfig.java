@@ -39,9 +39,10 @@ public class SecurityConfig {
                                 .requestMatchers("/auth/**", "/verify/**", "/public/**",
                                         "/adminuser/**")
                                 .permitAll()
-                                .requestMatchers("/admin/**", "/sru/**").hasAnyAuthority("LIBRARIAN")
+                                .requestMatchers("/admin/**", "/sru/**").hasAnyAuthority("LIBRARIAN", "ADMIN")
                                 .requestMatchers("/user/**").hasAnyAuthority("STUDENT")
-                                .requestMatchers("/adminuser/**").hasAnyAuthority("LIBRARIAN", "STUDENT")
+                                .requestMatchers("/adminuser/**").hasAnyAuthority("LIBRARIAN", "STUDENT",
+                                        "ADMIN")
                                 .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(

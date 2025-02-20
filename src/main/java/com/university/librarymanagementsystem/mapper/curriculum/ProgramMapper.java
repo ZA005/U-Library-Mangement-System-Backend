@@ -11,23 +11,24 @@ public class ProgramMapper {
 
     public static ProgramDTO mapToProgramDTO(Program program) {
         return new ProgramDTO(
-                program.getId(),
+                program.getProgram_id(),
                 program.getDepartment().getId(),
                 program.getDepartment().getName(),
-                program.getDepartment().getStatus(),
-                program.getName(),
-                program.getNumberOfSubjects(),
+                program.getDepartment().getCode(),
+                program.getCode(),
+                program.getDescription(),
                 program.getStatus());
     }
 
     public static Program mapToProgram(ProgramDTO programDTO) {
-        Department department = new Department();
-        department.setId(programDTO.getDepartment_id());
+        Department dept = new Department();
+        dept.setId(programDTO.getDepartment_id());
         return new Program(
-                programDTO.getId(),
-                department,
-                programDTO.getName(),
-                programDTO.getSubjects(),
+                programDTO.getProgram_id(),
+                dept,
+                programDTO.getCode(),
+                programDTO.getDescription(),
                 programDTO.getStatus());
+
     }
 }

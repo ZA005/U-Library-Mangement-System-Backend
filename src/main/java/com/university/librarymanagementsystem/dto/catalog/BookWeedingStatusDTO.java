@@ -16,6 +16,7 @@ public class BookWeedingStatusDTO {
     private Long id;
     private Long bookId;
     private Integer weedingCriteriaId;
+    private Long bookWeedingId;
     private String weedStatus;
     private LocalDate reviewDate;
     private String notes;

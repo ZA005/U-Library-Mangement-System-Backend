@@ -1,8 +1,11 @@
 package com.university.librarymanagementsystem.mapper.catalog;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
+import com.university.librarymanagementsystem.dto.catalog.AccessionDTO;
 import com.university.librarymanagementsystem.dto.catalog.BookDto;
+import com.university.librarymanagementsystem.dto.circulation.BookLoanDetailsDTO;
 import com.university.librarymanagementsystem.entity.catalog.Author;
 import com.university.librarymanagementsystem.entity.catalog.Book;
 
@@ -25,7 +28,6 @@ public class BookMapper {
                 book.getThumbnail(),
                 book.getPrintType(),
                 book.getStatus(),
-                book.getBarcode(),
                 book.getCallNumber(),
                 book.getPurchasePrice(),
                 book.getSection(),
@@ -35,7 +37,30 @@ public class BookMapper {
                 book.getVendor(),
                 book.getFundingSource(),
                 book.getSubjects(),
-                book.getCollectionType());
+                book.getCollectionType(),
+                book.getBookCondition());
+
     }
 
+    public static AccessionDTO mapToAccessionDTO(Book book) {
+        AccessionDTO accessionDTO = new AccessionDTO();
+        accessionDTO.setAccessionNo(book.getAccessionNo());
+        accessionDTO.setSection(book.getSection());
+        return accessionDTO;
+    }
+
+
+    public static BookLoanDetailsDTO mapToBookLoanDetails(Book book) {
+        BookLoanDetailsDTO bookLoanDetails = new BookLoanDetailsDTO();
+        bookLoanDetails.setTitle(book.getTitle());
+      
+        List<String> authorsList = book.getAuthors().stream()
+                .map(Author::getName)
+                .toList();
+
+        bookLoanDetails.setAuthors(authorsList);
+        bookLoanDetails.setCallNumber(book.getCallNumber());
+        bookLoanDetails.setBookStatus(book.getStatus());
+        return bookLoanDetails;
+    }
 }

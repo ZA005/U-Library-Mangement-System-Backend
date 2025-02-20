@@ -12,12 +12,15 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProgramDTO {
-    private int id;
-    @JsonProperty("department_id")
-    private int department_id;
+    @JsonProperty("prog_id")
+    private int program_id;
+
+    @JsonProperty("dept_id")
+    private String department_id;
     private String department_name;
-    private int department_status;
-    private String name;
-    private int subjects;
-    private int status;
+    private String department_code;
+
+    private String code;
+    private String description;
+    private byte status;
 }

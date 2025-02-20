@@ -1,5 +1,6 @@
 package com.university.librarymanagementsystem.service.impl.curriculum;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,43 +24,63 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     public DepartmentDTO addDepartment(DepartmentDTO departmentDTO) {
         Department department = DepartmentMapper.mapToDepartment(departmentDTO);
-
-        boolean isExisting = departmentRepository.existsByName(departmentDTO.getName());
-
-        if (isExisting) {
-            throw new DuplicateEntryException("A department with the same name is already existed!");
-        }
         Department savedDepartment = departmentRepository.save(department);
 
         return DepartmentMapper.mapToDepartmentDTO(savedDepartment);
     }
 
     @Override
-    public List<DepartmentDTO> addDepartments(List<DepartmentDTO> departmentDTOs) {
+    public List<DepartmentDTO> uploadDepartments(List<DepartmentDTO> departmentDTOs) {
         List<Department> departments = departmentDTOs.stream()
                 .map(DepartmentMapper::mapToDepartment)
                 .collect(Collectors.toList());
 
-        // Filter out duplicates before saving
-        List<Department> nonDuplicateDepartments = departments.stream()
-                .filter(department -> !departmentRepository.existsByName(department.getName()))
-                .collect(Collectors.toList());
+        List<Department> departmentsToUpdate = new ArrayList<>();
+        List<Department> departmentsToSave = new ArrayList<>();
 
-        if (nonDuplicateDepartments.isEmpty()) {
-            throw new DuplicateEntryException("All provided departments already exist.");
+        for (Department department : departments) {
+            // Check if department ID exists
+            Department existingDepartment = departmentRepository.findById(department.getId()).orElse(null);
+
+            if (existingDepartment != null) {
+                // If the department exists, check if the name is the same
+                if (!existingDepartment.getName().equals(department.getName())) {
+                    // If the name is different, prepare for update
+                    departmentsToUpdate.add(department);
+                }
+                // If the name is the same, skip the duplicate
+            } else {
+                // If the department does not exist, add it to the save list
+                departmentsToSave.add(department);
+            }
         }
 
-        List<Department> savedDepartments = departmentRepository.saveAll(nonDuplicateDepartments);
+        // Save new departments
+        List<Department> savedDepartments = new ArrayList<>();
+        if (!departmentsToSave.isEmpty()) {
+            savedDepartments = departmentRepository.saveAll(departmentsToSave);
+        }
 
-        return savedDepartments.stream()
+        // Save updated departments
+        if (!departmentsToUpdate.isEmpty()) {
+            departmentRepository.saveAll(departmentsToUpdate); // Saving updated departments
+        }
+
+        // Combine saved and updated departments
+        List<Department> finalDepartments = new ArrayList<>();
+        finalDepartments.addAll(savedDepartments);
+        finalDepartments.addAll(departmentsToUpdate);
+
+        return finalDepartments.stream()
                 .map(DepartmentMapper::mapToDepartmentDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public DepartmentDTO getDepartmentById(Integer departmentID) {
+    public DepartmentDTO getDepartmentById(String departmentID) {
         Department department = departmentRepository.findById(departmentID)
-                .orElseThrow(() -> new ResourceNotFoundException("not exisiting" + departmentID));
+                .orElseThrow(() -> new ResourceNotFoundException("not exisiting" +
+                        departmentID));
 
         return DepartmentMapper.mapToDepartmentDTO(department);
     }
@@ -73,16 +94,27 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    public DepartmentDTO updateDepartment(Integer departmentID, DepartmentDTO updatedDepartment) {
+    public void updateMultipleDepartments(List<Department> departments) {
+        for (Department department : departments) {
+            // Check if department exists by ID
+            if (departmentRepository.existsById(department.getId())) {
+                // Fetch the existing department from the database
+                Department existingDepartment = departmentRepository.findById(department.getId())
+                        .orElseThrow(() -> new RuntimeException("Department not found with ID: " + department.getId()));
 
-        Department department = departmentRepository.findById(departmentID).orElseThrow(
-                () -> new ResourceNotFoundException("Employee is not existing with given ID:" + departmentID));
+                // Update fields as needed (e.g., name, etc.)
+                existingDepartment.setName(department.getName());
+                existingDepartment.setCode(department.getCode());
+                // Add more fields here as required for updating
 
-        department.setName(updatedDepartment.getName());
-        department.setStatus(updatedDepartment.getStatus());
-
-        Department updatedDepartmentObj = departmentRepository.save(department);
-
-        return DepartmentMapper.mapToDepartmentDTO(updatedDepartmentObj);
+                // Save the updated department
+                departmentRepository.save(existingDepartment);
+            } else {
+                // If department doesn't exist, you can handle it accordingly (e.g., throw an
+                // exception)
+                throw new RuntimeException("Department not found with ID: " + department.getId());
+            }
+        }
     }
+
 }

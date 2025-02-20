@@ -12,7 +12,7 @@ public class DepartmentMapper {
         return new DepartmentDTO(
                 department.getId(),
                 department.getName(),
-                department.getStatus());
+                department.getCode());
 
     }
 
@@ -20,6 +20,6 @@ public class DepartmentMapper {
         return new Department(
                 departmentDTO.getId(),
                 departmentDTO.getName(),
-                departmentDTO.getStatus());
+                departmentDTO.getCode());
     }
 }

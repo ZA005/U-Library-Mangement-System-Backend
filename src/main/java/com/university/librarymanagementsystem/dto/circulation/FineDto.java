@@ -23,5 +23,5 @@ public class FineDto {
     private LocalDateTime dueDate;
     private LocalDateTime returnDate;
     private Double fineAmount;
-    private boolean paid;
+    private int paid;
 }

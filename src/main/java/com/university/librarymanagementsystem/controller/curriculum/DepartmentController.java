@@ -15,7 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
+// import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @AllArgsConstructor
@@ -32,16 +32,17 @@ public class DepartmentController {
         return new ResponseEntity<>(savedDepartment, HttpStatus.CREATED);
     }
 
-    // ADDING MULTIPLE DEPARTMENTS
-    @PostMapping("/bulk")
-    public ResponseEntity<List<DepartmentDTO>> addDepartments(@RequestBody List<DepartmentDTO> departmentDTOs) {
-        List<DepartmentDTO> savedDepartments = departmentService.addDepartments(departmentDTOs);
-        return new ResponseEntity<>(savedDepartments, HttpStatus.CREATED);
+    // ADDING OF DEPARTMENTS VIA UPLOAD
+    @PostMapping("/upload")
+    public ResponseEntity<List<DepartmentDTO>> uploadDepartments(@RequestBody List<DepartmentDTO> deptDTO) {
+        List<DepartmentDTO> uploadedDepartments = departmentService.uploadDepartments(deptDTO);
+
+        return new ResponseEntity<>(uploadedDepartments, HttpStatus.CREATED);
     }
 
     // FETCHING OF DEPARTMENT BY ID
     @GetMapping("{id}")
-    public ResponseEntity<DepartmentDTO> getDepartmentByID(@PathVariable("id") Integer departmentID) {
+    public ResponseEntity<DepartmentDTO> getDepartmentByID(@PathVariable("id") String departmentID) {
         DepartmentDTO departmentDTO = departmentService.getDepartmentById(departmentID);
 
         return ResponseEntity.ok(departmentDTO);
@@ -55,13 +56,15 @@ public class DepartmentController {
         return ResponseEntity.ok(departments);
     }
 
-    // UPDATING DEPARTMENT
-    @PutMapping("{id}")
-    public ResponseEntity<DepartmentDTO> updateDepartment(@PathVariable("id") Integer departmentID,
-            @RequestBody DepartmentDTO updatedDepartment) {
+    // // UPDATING DEPARTMENT
+    // @PutMapping("{id}")
+    // public ResponseEntity<DepartmentDTO> updateDepartment(@PathVariable("id")
+    // Integer departmentID,
+    // @RequestBody DepartmentDTO updatedDepartment) {
 
-        DepartmentDTO departmentDTO = departmentService.updateDepartment(departmentID, updatedDepartment);
+    // DepartmentDTO departmentDTO =
+    // departmentService.updateDepartment(departmentID, updatedDepartment);
 
-        return ResponseEntity.ok(departmentDTO);
-    }
+    // return ResponseEntity.ok(departmentDTO);
+    // }
 }

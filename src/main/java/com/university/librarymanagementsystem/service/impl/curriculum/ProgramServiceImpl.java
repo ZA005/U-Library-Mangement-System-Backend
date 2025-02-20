@@ -1,5 +1,6 @@
 package com.university.librarymanagementsystem.service.impl.curriculum;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,12 +32,6 @@ public class ProgramServiceImpl implements ProgramService {
 
         Program program = ProgramMapper.mapToProgram(programDTO);
 
-        boolean isExisting = programRepository.existsByName(programDTO.getName());
-
-        if (isExisting) {
-            throw new DuplicateEntryException("A program with the same name is already existed!");
-        }
-
         program.setDepartment(department);
 
         Program savedProgram = programRepository.save(program);
@@ -45,36 +40,64 @@ public class ProgramServiceImpl implements ProgramService {
     }
 
     @Override
-    public List<ProgramDTO> addPrograms(List<ProgramDTO> programDTOs) {
+    public List<ProgramDTO> uploadPrograms(List<ProgramDTO> programDTOs) {
+
+        // SET DEFAULT VALUE OF STATUS TO 1
+        // programDTOs.forEach(dto -> {
+        // dto.setStatus((byte) 1);
+        // });
+        programDTOs.forEach(dto -> {
+            System.out.println(dto.getProgram_id());
+            System.out.println(dto.getDepartment_id());
+            System.out.println(dto.getDescription());
+            System.out.println(dto.getStatus());
+            System.out.println(dto.getCode());
+            // System.out.println(dto.getProgram_id());
+
+        });
         List<Program> programs = programDTOs.stream()
                 .map(programDTO -> {
-                    Department department = departmentRepository.findByName(programDTO.getDepartment_name())
+                    Department department = departmentRepository.findById(programDTO.getDepartment_id())
                             .orElseThrow(() -> new ResourceNotFoundException(
                                     "Department with ID " + programDTO.getDepartment_id() + " not found!"));
                     Program program = ProgramMapper.mapToProgram(programDTO);
                     program.setDepartment(department);
                     return program;
                 })
-                .filter(program -> !programRepository.existsByName(program.getName()))
                 .collect(Collectors.toList());
 
-        if (programs.isEmpty()) {
-            throw new DuplicateEntryException("All provided programs already exist.");
+        List<Program> programsToUpdate = new ArrayList<>();
+        List<Program> programsToSave = new ArrayList<>();
+
+        for (Program program : programs) {
+            Program existingProgram = programRepository.findById(program.getProgram_id()).orElse(null);
+            System.out.println(existingProgram);
+            if (existingProgram != null) {
+                // Skip if the description is the same (handle duplicate gracefully)
+                if (!existingProgram.getDescription().equals(program.getDescription())) {
+                    programsToUpdate.add(program);
+                }
+            } else {
+                programsToSave.add(program);
+            }
         }
 
-        List<Program> savedPrograms = programRepository.saveAll(programs);
+        List<Program> savedPrograms = new ArrayList<>();
+        if (!programsToSave.isEmpty()) {
+            savedPrograms = programRepository.saveAll(programsToSave);
+        }
 
-        return savedPrograms.stream()
+        if (!programsToUpdate.isEmpty()) {
+            programRepository.saveAll(programsToUpdate);
+        }
+
+        List<Program> finalPrograms = new ArrayList<>();
+        finalPrograms.addAll(savedPrograms);
+        finalPrograms.addAll(programsToUpdate);
+
+        return finalPrograms.stream()
                 .map(ProgramMapper::mapToProgramDTO)
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public ProgramDTO getProgramByID(Integer programID) {
-        Program program = programRepository.findById(programID)
-                .orElseThrow(() -> new ResourceNotFoundException("not existing" + programID));
-
-        return ProgramMapper.mapToProgramDTO(program);
     }
 
     @Override
@@ -86,28 +109,49 @@ public class ProgramServiceImpl implements ProgramService {
     }
 
     @Override
-    public List<ProgramDTO> getAllProgramsByDepartment(Integer departmentID) {
+    public List<ProgramDTO> getAllProgramsByDepartment(String departmentID) {
         List<Program> programs = programRepository.findByDepartmentId(departmentID);
 
         return programs.stream().map((program) -> ProgramMapper.mapToProgramDTO(program))
                 .collect(Collectors.toList());
     }
-
-    @Override
-    public ProgramDTO updateDepartment(Integer programID, ProgramDTO updatedProgram) {
-        Program program = programRepository.findById(programID)
-                .orElseThrow(() -> new ResourceNotFoundException("Program not existing with given ID" + programID));
-
-        Department department = departmentRepository.findById(updatedProgram.getDepartment_id())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Department not existing with the given ID" + updatedProgram.getDepartment_id()));
-        program.setName(updatedProgram.getName());
-        program.setDepartment(department);
-        program.setStatus(updatedProgram.getStatus());
-
-        Program updatedEntity = programRepository.save(program);
-
-        return ProgramMapper.mapToProgramDTO(updatedEntity);
-    }
-
 }
+// @Override
+// public List<ProgramDTO> uploadPrograms(List<ProgramDTO> programDTOs) {
+// List<Program> program = programDTOs.stream().map(programDTO -> {
+// Department department =
+// departmentRepository.findById(programDTO.getDepartment_id())
+// .orElseThrow(() -> new ResourceNotFoundException(
+// "Department with ID" + programDTO.getDepartment_id() + "not found."));
+// });
+// return null;
+// }
+// @Override
+// public ProgramDTO getProgramByID(String programID) {
+// Program program = programRepository.findById(programID)
+// .orElseThrow(() -> new ResourceNotFoundException("not existing" +
+// programID));
+
+// return ProgramMapper.mapToProgramDTO(program);
+// }
+
+// @Override
+// public ProgramDTO updateDepartment(Integer programID, ProgramDTO
+// updatedProgram) {
+// Program program = programRepository.findById(programID)
+// .orElseThrow(() -> new ResourceNotFoundException("Program not existing with
+// given ID" + programID));
+
+// Department department =
+// departmentRepository.findById(updatedProgram.getDepartment_id())
+// .orElseThrow(() -> new ResourceNotFoundException(
+// "Department not existing with the given ID" +
+// updatedProgram.getDepartment_id()));
+// program.setDescription(updatedProgram.getDescription());
+// program.setDepartment(department);
+// program.setStatus(updatedProgram.getStatus());
+
+// Program updatedEntity = programRepository.save(program);
+
+// return ProgramMapper.mapToProgramDTO(updatedEntity);
+// }

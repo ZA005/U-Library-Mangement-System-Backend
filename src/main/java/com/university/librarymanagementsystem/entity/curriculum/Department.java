@@ -2,8 +2,6 @@ package com.university.librarymanagementsystem.entity.curriculum;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -17,15 +15,26 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "department")
+@Table(name = "departments")
 @Data
 public class Department {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    @Column(name = "name", nullable = false)
+    @Column(name = "dept_id", length = 2, nullable = false)
+    private String id;
+
+    @Column(name = "dept_name", length = 100)
     private String name;
-    @Column(name = "status", nullable = false)
-    private int status;
+
+    @Column(name = "dept_code", length = 10)
+    private String code;
+
+    @Override
+    public String toString() {
+        return "Department{" +
+                "deptId='" + id + '\'' +
+                ", deptName='" + name + '\'' +
+                ", deptCode='" + code + '\'' +
+                '}';
+    }
 }

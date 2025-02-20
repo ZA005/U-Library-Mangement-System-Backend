@@ -22,7 +22,7 @@ import lombok.Setter;
 public class Acquisition {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @Column(name = "book_title", nullable = false)

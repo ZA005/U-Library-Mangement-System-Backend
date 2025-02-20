@@ -6,7 +6,10 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.university.librarymanagementsystem.dto.catalog.AccessionDTO;
 import com.university.librarymanagementsystem.dto.catalog.BookDto;
+import com.university.librarymanagementsystem.dto.catalog.WeedInfoDTO;
+import com.university.librarymanagementsystem.dto.circulation.BookLoanDetailsDTO;
 import com.university.librarymanagementsystem.entity.catalog.Book;
 import com.university.librarymanagementsystem.exception.ResourceNotFoundException;
 import com.university.librarymanagementsystem.mapper.catalog.BookMapper;
@@ -22,13 +25,18 @@ public class BookServiceImpl implements BookService {
     @Override
     public List<BookDto> getAllBooks() {
         List<Book> books = bookRepository.findAll();
-        return books.stream().map(BookMapper::toDto).toList();
+        return books.stream()
+                .filter(book -> !book.getStatus().equals("WEEDED") && !book.getStatus().equals("ARCHIVED"))
+                .map(BookMapper::toDto)
+                .toList();
     }
 
     @Override
     public List<BookDto> getBooksByAuthorName(String authorName) {
         List<Book> books = bookRepository.findBooksByAuthorName(authorName);
-        return books.stream().map(BookMapper::toDto).toList();
+        return books.stream()
+                .filter(book -> !book.getStatus().equals("WEEDED") && !book.getStatus().equals("ARCHIVED"))
+                .map(BookMapper::toDto).toList();
     }
 
     @Override
@@ -73,12 +81,23 @@ public class BookServiceImpl implements BookService {
         return newAccessionNumberBase + " c." + (maxCopyNumber + 1);
     }
 
+    // Book borrowing
     @Override
-    public BookDto getBookByBarcode(String barcode) {
-        Book book = bookRepository.findByBarcode(barcode)
-                .orElseThrow(() -> new ResourceNotFoundException("Book not found: " + barcode));
+    public BookLoanDetailsDTO getBookByAccessionNo(String accessionNo) {
+        // Retrieve the book by accession number
+        Book book = bookRepository.findByAccessionNo(accessionNo)
+                .orElseThrow(() -> new ResourceNotFoundException("Book not found: " + accessionNo));
 
-        return BookMapper.toDto(book);
+        // Check if the book status is ARCHIVED, WEEDED, or LOST
+        if ("ARCHIVED".equalsIgnoreCase(book.getStatus()) ||
+                "WEEDED".equalsIgnoreCase(book.getStatus()) ||
+                "LOST".equalsIgnoreCase(book.getStatus())) {
+            throw new ResourceNotFoundException("The book is not available for borrowing. Status: " + book.getStatus());
+        }
+
+        // Proceed with mapping to BookLoanDetails if the book is available for
+        // borrowing
+        return BookMapper.mapToBookLoanDetails(book);
     }
 
     @Override
@@ -150,4 +169,34 @@ public class BookServiceImpl implements BookService {
         Optional<String> accessionNumber = bookRepository.findLastAddedBookAccessionNumber();
         return accessionNumber.orElseThrow(() -> new ResourceNotFoundException("No books found in the database."));
     }
+
+    @Override
+    public void weedBook(WeedInfoDTO weedInfoDTO) {
+        Optional<Book> bookOptional = bookRepository.findById(weedInfoDTO.getBookId());
+        if (bookOptional.isEmpty()) {
+            throw new IllegalArgumentException("Book not found with ID: " + weedInfoDTO.getBookId());
+        }
+
+        Book book = bookOptional
+                .orElseThrow(() -> new ResourceNotFoundException("Book not found with ID: " + weedInfoDTO.getBookId()));
+        book.setStatus(weedInfoDTO.getWeedStatus().toString());
+        bookRepository.save(book);
+    }
+
+    @Override
+    public List<AccessionDTO> getAllAccessionNumbers() {
+        List<Book> books = bookRepository.findAllAccessionsWithSections();
+        return books.stream()
+                .map(BookMapper::mapToAccessionDTO)
+                .toList();
+    }
+
+    @Override
+    public List<BookDto> getBooksByIsbn13(String isbn13) {
+        List<Book> books = bookRepository.findBooksByIsbn13(isbn13);
+        return books.stream()
+                .filter(book -> !book.getStatus().equals("WEEDED") && !book.getStatus().equals("ARCHIVED"))
+                .map(BookMapper::toDto).toList();
+    }
+
 }

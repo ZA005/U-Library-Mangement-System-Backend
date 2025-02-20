@@ -33,7 +33,7 @@ public class FineMapper {
                 convertTimestampToLocalDateTime(result[7]), // duedate
                 convertTimestampToLocalDateTime(result[8]), // return date
                 (Double) result[9], // funeamount
-                (Boolean) result[10] // paid
+                (Integer) result[10] // paid
 
         );
     }

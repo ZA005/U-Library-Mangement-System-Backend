@@ -3,24 +3,28 @@ package com.university.librarymanagementsystem.service.circulation;
 import java.util.List;
 
 import com.university.librarymanagementsystem.dto.circulation.BorrowerDetailsDto;
+import com.university.librarymanagementsystem.dto.circulation.LoanDetailsDTO;
 import com.university.librarymanagementsystem.dto.circulation.LoanDto;
+import com.university.librarymanagementsystem.dto.circulation.UserCirculationDetailsDTO;
 import com.university.librarymanagementsystem.entity.circulation.Loans;
 
 public interface LoanService {
-    List<LoanDto> getAllLoanDetails();
+    List<LoanDetailsDTO> getAllLoanDetails();
 
-    List<LoanDto> getAllLoanWithBorrowedStatus();
+    List<LoanDetailsDTO> getAllLoanWithBorrowedStatus();
 
     BorrowerDetailsDto getBorrowerDetails(String libraryCardNumber);
 
-    LoanDto saveLoan(LoanDto loanDto);
+    Loans saveLoan(LoanDetailsDTO loanDetailsDTO);
 
-    List<LoanDto> getLoansDetails(Long loanId);
+    LoanDetailsDTO getLoanDetails(Long loanId);
 
     LoanDto updateLoanStatus(Long loanId, LoanDto loanDto, String action);
 
     List<Loans> getOverdueLoans();
 
-    boolean isBookLoanedByBarcode(String barcode);
+    boolean isBookLoanedByAccessionNo(String accessionNo);
+
+    UserCirculationDetailsDTO getUserCirculationDetails(String uncIdNumber);
 
 }

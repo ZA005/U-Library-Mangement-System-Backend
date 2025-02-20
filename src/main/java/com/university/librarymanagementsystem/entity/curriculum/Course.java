@@ -19,27 +19,27 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "subjects")
+@Table(name = "courses")
 @Data
-public class Subject {
+public class Course {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    // @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int course_id;
 
     @ManyToOne
-    @JoinColumn(name = "program_id", nullable = false)
-    private Program program;
+    @JoinColumn(name = "curr_id", nullable = false)
+    private Curriculum curriculum;
 
-    @Column(name = "department_id")
-    private int department_id;
+    @Column(name = "course_code", length = 20)
+    private String course_code;
 
-    @Column(name = "subject_name")
-    private String name;
+    @Column(name = "course_name", length = 100)
+    private String course_name;
 
-    @Column(name = "year", nullable = false)
-    private int year;
+    @Column(name = "year_level", nullable = false)
+    private int year_level;
 
-    @Column(name = "status", nullable = false)
-    private int status;
+    @Column(name = "sem", nullable = false)
+    private int sem;
 }

@@ -4,14 +4,15 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.university.librarymanagementsystem.dto.catalog.BookDto;
 import com.university.librarymanagementsystem.dto.curriculum.BookReferenceDTO;
 import com.university.librarymanagementsystem.service.curriculum.BookReferenceService;
 
@@ -36,6 +37,19 @@ public class BookReferenceController {
         }
     }
 
+    @PostMapping("/multiple")
+    public ResponseEntity<Object> addMultipleBookReferences(@RequestBody List<BookReferenceDTO> bookRefDTOs) {
+        try {
+            List<BookReferenceDTO> savedBookReferences = bookReferenceService.addMultipleBookRef(bookRefDTOs);
+            return new ResponseEntity<>(savedBookReferences, HttpStatus.CREATED);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse(
+                            "An unexpected error occurred while adding multiple references: " + e.getMessage()));
+        }
+    }
+
     @GetMapping
     public ResponseEntity<List<BookReferenceDTO>> getAllBookReference() {
         List<BookReferenceDTO> bookReferences = bookReferenceService.getAllBookReference();
@@ -43,24 +57,34 @@ public class BookReferenceController {
         return ResponseEntity.ok(bookReferences);
     }
 
-    @GetMapping("/subject/{id}")
-    public ResponseEntity<List<BookReferenceDTO>> getAllBookReferenceBySubject(@PathVariable("id") Integer subjectId) {
-        List<BookReferenceDTO> bookReferences = bookReferenceService.getAllBookRefBySubject(subjectId);
+    @GetMapping("/course/{id}")
+    public ResponseEntity<List<BookReferenceDTO>> getAllBookReferenceBySubject(@PathVariable("id") Integer courseId) {
+        List<BookReferenceDTO> bookReferences = bookReferenceService.getAllBookRefByCourse(courseId);
 
         return ResponseEntity.ok(bookReferences);
     }
 
-    @PutMapping("{id}")
-    public ResponseEntity<BookReferenceDTO> updateBookReference(@PathVariable("id") Integer bookRefId,
-            @RequestBody BookReferenceDTO updatedBookRef) {
+    @GetMapping("/book")
+    public ResponseEntity<List<BookDto>> getAllUniqueBooks() {
+        List<BookDto> uniqueBooks = bookReferenceService.getAllUniqueBooks();
 
+        return ResponseEntity.ok(uniqueBooks);
+    }
+
+    @GetMapping("/book/course/{id}")
+    public ResponseEntity<List<BookDto>> getBooksNotReferenceInCourse(@PathVariable("id") Integer courseId) {
+        List<BookDto> books = bookReferenceService.getAllBooksNotReferenced(courseId);
+
+        return ResponseEntity.ok(books);
+    }
+
+    @DeleteMapping("/remove/{bookRefId}")
+    public ResponseEntity<Void> removeBookReference(@PathVariable Integer bookRefId) {
         try {
-            BookReferenceDTO bookRefDTO = bookReferenceService.updateBookRef(bookRefId, updatedBookRef);
-
-            return ResponseEntity.ok(bookRefDTO);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            bookReferenceService.removeBookRef(bookRefId);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 

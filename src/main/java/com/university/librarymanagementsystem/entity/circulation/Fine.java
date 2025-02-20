@@ -40,5 +40,5 @@ public class Fine {
     private Double fineAmount;
 
     @Column(nullable = false)
-    private boolean paid;
+    private int paid;
 }

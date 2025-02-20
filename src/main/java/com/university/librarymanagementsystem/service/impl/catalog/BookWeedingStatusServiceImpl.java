@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.university.librarymanagementsystem.dto.catalog.BookWeedingStatusDTO;
+import com.university.librarymanagementsystem.dto.catalog.WeedInfoDTO;
 import com.university.librarymanagementsystem.entity.catalog.BookWeedingStatus;
 import com.university.librarymanagementsystem.exception.ResourceNotFoundException;
 import com.university.librarymanagementsystem.mapper.catalog.BookWeedingStatusMapper;
@@ -20,20 +21,15 @@ public class BookWeedingStatusServiceImpl implements BookWeedingStatusService {
     private BookWeedingStatusRepository bookWeedingStatusRepository;
 
     @Override
-    public BookWeedingStatusDTO createBookWeedingStatus(BookWeedingStatusDTO bookWeedingStatusDTO) {
-        BookWeedingStatus status = BookWeedingStatusMapper.mapToEntity(bookWeedingStatusDTO);
-        status = bookWeedingStatusRepository.save(status);
-        return BookWeedingStatusMapper.mapToDTO(status);
-    }
+    public void updateBookWeedingStatus(WeedInfoDTO weedInfoDTO) {
+        BookWeedingStatus toUpdateBookWeedStatus = bookWeedingStatusRepository.findById(weedInfoDTO.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Book Weeding Status not found for id: " + weedInfoDTO
+                        .getId()));
+        toUpdateBookWeedStatus.setNotes(weedInfoDTO.getBookWeedingStatusNotes());
+        toUpdateBookWeedStatus.setReviewDate(weedInfoDTO.getReviewDate());
+        toUpdateBookWeedStatus.setWeedStatus(weedInfoDTO.getWeedStatus());
 
-    @Override
-    public BookWeedingStatusDTO updateBookWeedingStatus(Long id, BookWeedingStatusDTO bookWeedingStatusDTO) {
-        BookWeedingStatus existingStatus = bookWeedingStatusRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Book Weeding Status not found for id: " + id));
-        BookWeedingStatus updatedStatus = BookWeedingStatusMapper.mapToEntity(bookWeedingStatusDTO);
-        updatedStatus.setId(id);
-        updatedStatus = bookWeedingStatusRepository.save(updatedStatus);
-        return BookWeedingStatusMapper.mapToDTO(updatedStatus);
+        bookWeedingStatusRepository.save(toUpdateBookWeedStatus);
     }
 
     @Override
@@ -45,9 +41,9 @@ public class BookWeedingStatusServiceImpl implements BookWeedingStatusService {
     }
 
     @Override
-    public List<BookWeedingStatusDTO> getAllBookWeedingStatuses() {
+    public List<WeedInfoDTO> getAllBookWeedingStatuses() {
         return bookWeedingStatusRepository.findAll().stream()
-                .map(BookWeedingStatusMapper::mapToDTO)
+                .map(BookWeedingStatusMapper::mapToWeedInfoDTO)
                 .toList();
     }
 

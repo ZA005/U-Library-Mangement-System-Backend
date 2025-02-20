@@ -2,6 +2,8 @@ package com.university.librarymanagementsystem.entity.catalog;
 
 import java.time.LocalDate;
 
+import com.university.librarymanagementsystem.enums.WeedStatus;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -36,6 +38,10 @@ public class BookWeedingStatus {
     @ManyToOne
     @JoinColumn(name = "weeding_criteria_id", referencedColumnName = "id")
     private WeedingCriteria weedingCriteria;
+
+    @ManyToOne
+    @JoinColumn(name = "book_weeding_id", referencedColumnName = "id")
+    private BookWeeding bookWeeding;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "weed_status", nullable = false)

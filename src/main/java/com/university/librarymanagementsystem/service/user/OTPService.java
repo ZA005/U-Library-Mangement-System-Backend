@@ -4,24 +4,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
-
-import com.twilio.rest.api.v2010.account.Message;
-import com.twilio.type.PhoneNumber;
 
 @Service
 public class OTPService {
 
-    @Autowired
-    private JavaMailSender mailSender;
+    private final EmailService emailService;
 
-    // Twilio Configuration (Use your Twilio credentials)
-    private static final String TWILIO_PHONE_NUMBER = "+639093334396"; // Your Twilio phone number
-    private static final String ACCOUNT_SID = "AC09be47a5701c996bea8d665d1daba7be";
-    private static final String AUTH_TOKEN = "99a785bd755c8784ea75c1691b155e03";
+    public OTPService(EmailService emailService) {
+        this.emailService = emailService;
+    }
 
     Random random = new Random();
     private Map<String, String> otpStorage = new HashMap<>();
@@ -42,19 +34,11 @@ public class OTPService {
         if (storedOtp == null) {
             return false; // No OTP stored for this email
         }
-        boolean result = otp.equals(storedOtp);
-        return result;
+        return otp.equals(storedOtp);
     }
 
-    public void sendEmail(String to, String otp) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject("Your OTP Code");
-        message.setText("Your OTP code is: " + otp);
-        mailSender.send(message);
+    public void sendOTPEmail(String email, String otp) {
+        emailService.sendOTPEmail(email, otp);
     }
 
-    public void sendSMS(String to, String otp) {
-        Message.creator(new PhoneNumber(to), new PhoneNumber(TWILIO_PHONE_NUMBER), "Your OTP code is: " + otp).create();
-    }
 }

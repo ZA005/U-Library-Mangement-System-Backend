@@ -11,7 +11,10 @@ import lombok.Setter;
 @AllArgsConstructor
 public class BorrowerDetailsDto {
 
-    private String libraryCardNumber;
+    private String idNumber;
     private String department;
+    private boolean hasCurrentBorrowedBook;
+    private int reservationCount;
+    private boolean registered;
 
 }

@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.university.librarymanagementsystem.dto.user.OtpVerificationDTO;
 import com.university.librarymanagementsystem.dto.user.StakeholdersDto;
+import com.university.librarymanagementsystem.dto.user.UserDetailsDto;
 import com.university.librarymanagementsystem.service.user.OTPService;
 import com.university.librarymanagementsystem.service.user.StakeHolderService;
 
@@ -33,7 +35,7 @@ public class StakeHolderController {
     @GetMapping("/verify/{stakeHolderId}")
     public ResponseEntity<StakeholdersDto> getStakeholderId(@PathVariable("stakeHolderId") String id) {
 
-        StakeholdersDto stakeholdersDto = stakeHolderService.getStudentWithDepartmentAndCourse(id);
+        StakeholdersDto stakeholdersDto = stakeHolderService.geStakeHolder(id);
 
         String otp = otpService.generateOTP();
 
@@ -41,16 +43,16 @@ public class StakeHolderController {
         otpService.storeOTP(stakeholdersDto.getEmailAdd(), otp);
 
         // Send OTP via email and/or SMS
-        otpService.sendEmail(stakeholdersDto.getEmailAdd(), otp);
+        otpService.sendOTPEmail(stakeholdersDto.getEmailAdd(), otp);
 
         return ResponseEntity.ok(stakeholdersDto);
     }
 
     // Build API to verify OTP
     @PostMapping("/verify/confirm-otp")
-    public ResponseEntity<Map<String, String>> confirmOtp(@RequestBody Map<String, String> requestBody) {
-        String email = requestBody.get("emailAdd");
-        String otp = requestBody.get("otp");
+    public ResponseEntity<Map<String, String>> confirmOtp(@RequestBody OtpVerificationDTO otpVerificationDTO) {
+        String email = otpVerificationDTO.getEmailAdd();
+        String otp = otpVerificationDTO.getOtp();
 
         boolean isVerified = otpService.verifyOTP(email, otp);
         Map<String, String> response = new HashMap<>();
@@ -63,6 +65,13 @@ public class StakeHolderController {
             response.put("message", "Invalid or expired OTP!");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
+    }
+
+    // User details
+    @GetMapping("/verify/librarycard/{id}")
+    public ResponseEntity<UserDetailsDto> getUserDetails(@PathVariable("id") String id) {
+        UserDetailsDto userDetailsDto = stakeHolderService.getUserDetails(id);
+        return ResponseEntity.ok(userDetailsDto);
     }
 
 }

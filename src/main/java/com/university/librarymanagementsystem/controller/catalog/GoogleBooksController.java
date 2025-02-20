@@ -56,8 +56,8 @@ public class GoogleBooksController {
 
     @PostMapping("/save")
     public ResponseEntity<Book> saveBook(@RequestBody GoogleBooksDto bookDto) {
-        Book savedBook = googleBooksService.saveBook(bookDto);
-        return ResponseEntity.status(HttpStatus.SC_CREATED).body(savedBook);
+        googleBooksService.saveBook(bookDto);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/generate-call-number")

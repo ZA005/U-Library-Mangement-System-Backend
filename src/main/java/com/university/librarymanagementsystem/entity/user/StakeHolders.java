@@ -1,6 +1,9 @@
 package com.university.librarymanagementsystem.entity.user;
 
 import com.university.librarymanagementsystem.entity.curriculum.Program;
+
+import java.io.Serializable;
+
 import com.university.librarymanagementsystem.entity.curriculum.Department;
 
 import jakarta.persistence.Column;
@@ -40,11 +43,11 @@ public class StakeHolders {
     private String suffix;
 
     @ManyToOne
-    @JoinColumn(name = "department", referencedColumnName = "id")
+    @JoinColumn(name = "departments", referencedColumnName = "dept_id")
     private Department department;
 
     @ManyToOne
-    @JoinColumn(name = "program")
+    @JoinColumn(name = "programs", referencedColumnName = "program_id")
     private Program program;
 
     @Column(name = "contact_num", nullable = false)

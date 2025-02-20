@@ -12,7 +12,6 @@ import lombok.Setter;
 public class UsersDto {
 
     private Long userId;
-    private String libraryCardNumber;
     private String password;
     private String schoolId;
     private String role;

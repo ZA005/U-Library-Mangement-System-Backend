@@ -1,6 +1,5 @@
 package com.university.librarymanagementsystem.service.circulation;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import com.university.librarymanagementsystem.dto.circulation.FineDto;
@@ -13,4 +12,6 @@ public interface FineService {
     List<FineDto> getAllFines();
 
     List<FineDto> getAllFinesDetails();
+
+    void updateFineStatus(Long fineId);
 }

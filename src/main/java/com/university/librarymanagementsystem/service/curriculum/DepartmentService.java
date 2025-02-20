@@ -3,15 +3,20 @@ package com.university.librarymanagementsystem.service.curriculum;
 import java.util.List;
 
 import com.university.librarymanagementsystem.dto.curriculum.DepartmentDTO;
+import com.university.librarymanagementsystem.entity.curriculum.Department;
 
 public interface DepartmentService {
     DepartmentDTO addDepartment(DepartmentDTO departmentDTO);
 
-    List<DepartmentDTO> addDepartments(List<DepartmentDTO> departmentDTOs);
+    List<DepartmentDTO> uploadDepartments(List<DepartmentDTO> departmentDTO);
 
-    DepartmentDTO getDepartmentById(Integer departmentID);
+    void updateMultipleDepartments(List<Department> departments);
 
     List<DepartmentDTO> getAllDepartments();
 
-    DepartmentDTO updateDepartment(Integer departmentID, DepartmentDTO updateDepartment);
+    DepartmentDTO getDepartmentById(String departmentID);
+
 }
+
+// DepartmentDTO updateDepartment(String departmentID, DepartmentDTO
+// updateDepartment);

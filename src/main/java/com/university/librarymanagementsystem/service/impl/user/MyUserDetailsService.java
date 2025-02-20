@@ -15,8 +15,8 @@ public class MyUserDetailsService implements UserDetailsService {
     private UserRepo userRepo;
 
     @Override
-    public UserDetails loadUserByUsername(String libraryCardNumber) throws UsernameNotFoundException {
-        return userRepo.findByLibraryCardNumber(libraryCardNumber).orElseThrow();
+    public UserDetails loadUserByUsername(String uncIdNumber) throws UsernameNotFoundException {
+        return userRepo.findBySchoolId(uncIdNumber).orElseThrow();
     }
 
 }

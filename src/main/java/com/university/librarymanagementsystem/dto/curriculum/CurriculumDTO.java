@@ -11,17 +11,17 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SubjectDTO {
-    private int id;
+public class CurriculumDTO {
+
+    private String curr_id;
+
     @JsonProperty("program_id")
     private int program_id;
-    private String program_name;
+    private String program_code;
+    private String program_description;
 
-    @JsonProperty("department_id")
-    private int department_id;
-    private String department_name;
-
-    private String subject_name;
-    private int year;
-    private int status;
+    private int revision_no;
+    private int effectivity_sem;
+    private String effectivity_sy;
+    private byte status;
 }
