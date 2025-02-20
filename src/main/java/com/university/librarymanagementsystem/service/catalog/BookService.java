@@ -25,4 +25,6 @@ public interface BookService {
 
     List<AccessionDTO> getAllAccessionNumbers();
 
+    List<BookDto> getBooksByIsbn13(String isbn13);
+
 }

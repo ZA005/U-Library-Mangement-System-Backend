@@ -91,7 +91,9 @@ public class BookController {
     @PostMapping("/advance-search")
     public List<BookDto> advancedSearchBooks(@RequestBody BookSearchRequest request) {
         List<Book> books = bookRepository.advancedSearchBooks(request);
-        return books.stream().map(BookMapper::toDto).toList();
+        return books.stream()
+                .filter(book -> !book.getStatus().equals("WEEDED") && !book.getStatus().equals("ARCHIVED"))
+                .map(BookMapper::toDto).toList();
     }
 
     @GetMapping("/last-added-accession")
@@ -110,6 +112,11 @@ public class BookController {
     @GetMapping("/all-accession-number")
     public ResponseEntity<List<AccessionDTO>> getAllAccessionNumber() {
         return ResponseEntity.ok(bookService.getAllAccessionNumbers());
+    }
+
+    @GetMapping("/isbn13/{isbn13}")
+    public ResponseEntity<List<BookDto>> getBookByISBN13(@PathVariable String isbn13) {
+        return ResponseEntity.ok(bookService.getBooksByIsbn13(isbn13));
     }
 
 }
