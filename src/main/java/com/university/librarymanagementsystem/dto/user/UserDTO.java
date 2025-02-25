@@ -16,6 +16,7 @@ public class UserDTO {
     private String middleName;
     private String lastName;
     private String suffix;
+    private String role;
 
     private String contactNo;
     private String emailAdd;

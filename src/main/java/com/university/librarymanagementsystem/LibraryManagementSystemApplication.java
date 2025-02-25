@@ -10,7 +10,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 import com.university.librarymanagementsystem.config.GoogleBooksProperties;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.university.librarymanagementsystem")
 @EnableConfigurationProperties(GoogleBooksProperties.class)
 @EnableScheduling
 @EnableAsync

@@ -30,6 +30,8 @@ public class User {
     private String lastName;
     @Column(name = "suffix", nullable = false)
     private String suffix;
+    @Column(name = "role", nullable = false)
+    private String role;
 
     @Column(name = "contact_number", nullable = false)
     private String contactNo;
