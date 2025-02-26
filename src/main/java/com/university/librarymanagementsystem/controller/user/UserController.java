@@ -72,7 +72,7 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK); // 200 OK
     }
 
-    @GetMapping("/verify/librarycard/{id}")
+    @GetMapping("/public/user/{id}")
     public ResponseEntity<UserDTO> fetchUser(@PathVariable("id") String user_id) {
         UserDTO user = service.fetchUserById(user_id);
 
