@@ -51,6 +51,7 @@ public class AuthenticationService {
             response.setToken(token);
             response.setRole(account.getRole());
             response.setRefreshToken(refreshToken);
+            response.setUser_id(user_id);
             response.setExpirationTime("6Hrs");
             response.setMessage("Successfully Logged In");
 
