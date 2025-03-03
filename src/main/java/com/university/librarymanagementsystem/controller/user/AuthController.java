@@ -38,8 +38,9 @@ public class AuthController {
     }
 
     @GetMapping("auth/verify/{user_id}")
-    public ResponseEntity<Boolean> isActivated(@PathVariable String user_id) {
-        return ResponseEntity.ok(auth.isActivated(user_id));
+    public ResponseEntity<RequestResponse> isActivated(@PathVariable String user_id) {
+        RequestResponse response = auth.isActivated(user_id);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
 }

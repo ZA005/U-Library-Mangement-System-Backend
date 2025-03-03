@@ -30,8 +30,26 @@ public class AuthenticationService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public Boolean isActivated(String user_id) {
-        return accountRepo.existByUserID(user_id);
+    public RequestResponse isActivated(String user_id) {
+        System.out.println("USER ID:" + user_id);
+        RequestResponse response = new RequestResponse();
+
+        try {
+            Integer exists = accountRepo.existByUserID(user_id);
+
+            if (exists == 1) {
+                response.setStatusCode(200);
+                response.setMessage("User is activated.");
+            } else {
+                response.setStatusCode(404);
+                response.setMessage("User ID not found or not activated.");
+            }
+        } catch (Exception e) {
+            response.setStatusCode(500);
+            response.setMessage("Error checking activation: " + e.getMessage());
+        }
+
+        return response;
     }
 
     public RequestResponse login(RequestResponse loginRequest) {

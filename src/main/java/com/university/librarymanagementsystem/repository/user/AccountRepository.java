@@ -16,6 +16,6 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
     Optional<Account> findByUserID(@Param("user_id") String user_id);
 
     @Query(value = "SELECT EXISTS (SELECT 1 FROM accounts WHERE user_id = :user_id)", nativeQuery = true)
-    Boolean existByUserID(@Param("user_id") String user_id);
+    Integer existByUserID(@Param("user_id") String user_id);
 
 }
