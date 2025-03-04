@@ -1,5 +1,6 @@
-package com.university.librarymanagementsystem.entity.book;
+package com.university.librarymanagementsystem.entity.catalog.book;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,28 +17,14 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "books")
+@Table(name = "book_conditions")
 @Data
-public class Books {
+public class Condition {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private String call_number;
+    @Column(name = "condition_name", nullable = false)
+    private String bookCondition; // 0 = new ,
 
-    private String accession_number;
-
-    private String title;
-
-    private String ISBN10;
-
-    private String ISBN13;
-
-    private String description;
-
-    private String pages;
-
-    private String thumbnail;
-
-    private Location location;
 }

@@ -1,4 +1,4 @@
-package com.university.librarymanagementsystem.entity.book;
+package com.university.librarymanagementsystem.entity.catalog;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

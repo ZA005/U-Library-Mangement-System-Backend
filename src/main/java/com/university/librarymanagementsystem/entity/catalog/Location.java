@@ -1,13 +1,10 @@
-package com.university.librarymanagementsystem.entity.book;
+package com.university.librarymanagementsystem.entity.catalog;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,17 +17,19 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "book_conditions")
+@Table(name = "book_locations")
 @Data
-public class Condition {
+public class Location {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "book_id", nullable = false)
-    private Books books;
+    @Column(name = "location_code", length = 5)
+    private String codeName;
 
-    @Column(name = "condition", nullable = false)
-    private int condition; // 0 = new ,
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    @Column(name = "status", nullable = false)
+    private byte status;
 }

@@ -1,10 +1,17 @@
-package com.university.librarymanagementsystem.entity.book;
+package com.university.librarymanagementsystem.entity.catalog.book;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,9 +24,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "book_locations")
+@Table(name = "authors")
 @Data
-public class Location {
+public class Author {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -27,6 +34,8 @@ public class Location {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "status", nullable = false)
-    private int status;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "author_books", joinColumns = @JoinColumn(name = "author_id"), inverseJoinColumns = @JoinColumn(name = "book_id"))
+    private List<Books> books = new ArrayList<>();
+
 }
