@@ -25,6 +25,6 @@ public class Condition {
     private int id;
 
     @Column(name = "condition_name", nullable = false)
-    private String bookCondition; // 0 = new ,
+    private String conditionName;
 
 }

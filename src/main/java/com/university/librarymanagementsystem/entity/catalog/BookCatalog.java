@@ -35,7 +35,7 @@ public class BookCatalog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "catalog_id")
-    private int catalogId;
+    private int id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id", referencedColumnName = "book_id", nullable = false)
@@ -55,7 +55,7 @@ public class BookCatalog {
     private LocalDate acquiredDate;
 
     @Column(name = "purchase_price", nullable = false)
-    private LocalDate purchasePrice;
+    private double purchasePrice;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -66,11 +66,11 @@ public class BookCatalog {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_id", referencedColumnName = "id", nullable = false)
-    private Location location;
+    private Location locationId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "section_id", referencedColumnName = "id", nullable = false)
-    private Section section;
+    private Section sectionId;
 
     @Column(name = "collection_type", nullable = false)
     private String collectionType;

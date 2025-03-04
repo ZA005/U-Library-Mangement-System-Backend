@@ -30,7 +30,7 @@ public class Books {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
     @Column(name = "book_id", nullable = false)
-    private int bookId;
+    private int id;
 
     @Column(name = "title", nullable = false)
     private String title;
@@ -48,7 +48,7 @@ public class Books {
     private String description;
 
     @Column(name = "pages", nullable = false)
-    private String pages;
+    private int pages;
 
     @Column(name = "thumbnail", nullable = true)
     private String thumbnail;
@@ -56,8 +56,8 @@ public class Books {
     @Column(name = "edition", nullable = true)
     private String edition;
 
-    @Column(name = "seiries", nullable = true)
-    private String seiries;
+    @Column(name = "series", nullable = true)
+    private String series;
 
     @Column(name = "language", nullable = false)
     private String language;
