@@ -11,6 +11,7 @@ import com.university.librarymanagementsystem.dto.user.RequestResponse;
 import com.university.librarymanagementsystem.entity.user.Account;
 import com.university.librarymanagementsystem.entity.user.User;
 import com.university.librarymanagementsystem.repository.user.AccountRepository;
+import com.university.librarymanagementsystem.repository.user.UserRepository;
 
 import jakarta.annotation.PostConstruct;
 
@@ -18,13 +19,15 @@ import jakarta.annotation.PostConstruct;
 public class AuthenticationService {
 
     private final AccountRepository accountRepo;
+    private final UserRepository userRepo;
     private final JWTUtils jwtUtils;
     private final AuthenticationManager authManager;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthenticationService(AccountRepository accountRepo, JWTUtils jwtUtils,
+    public AuthenticationService(AccountRepository accountRepo, UserRepository userRepo, JWTUtils jwtUtils,
             AuthenticationManager authManager, PasswordEncoder passwordEncoder) {
         this.accountRepo = accountRepo;
+        this.userRepo = userRepo;
         this.jwtUtils = jwtUtils;
         this.authManager = authManager;
         this.passwordEncoder = passwordEncoder;
@@ -35,15 +38,24 @@ public class AuthenticationService {
         RequestResponse response = new RequestResponse();
 
         try {
-            Integer exists = accountRepo.existByUserID(user_id);
-
-            if (exists == 1) {
-                response.setStatusCode(200);
-                response.setMessage("User is activated.");
-            } else {
-                response.setStatusCode(404);
-                response.setMessage("User ID not found or not activated.");
+            // Check if the user is activated
+            Integer isActive = accountRepo.existByUserID(user_id);
+            if (isActive == 1) {
+                response.setStatusCode(409);
+                response.setMessage("User is already activated.");
+                return response;
             }
+
+            // Check if the user exists
+            Boolean isExist = userRepo.existsById(user_id);
+            if (!isExist) {
+                response.setStatusCode(404);
+                response.setMessage("User ID not found");
+                return response;
+            }
+
+            response.setStatusCode(200);
+            response.setMessage("User is not activated.");
         } catch (Exception e) {
             response.setStatusCode(500);
             response.setMessage("Error checking activation: " + e.getMessage());
