@@ -16,7 +16,7 @@ import lombok.Setter;
 public class BookCatalogDTO {
 
     private int id;
-    private int bookId;
+    private int book;
     private String callNumber;
     private String accessionNumber;
     private int conditionId;
@@ -24,7 +24,7 @@ public class BookCatalogDTO {
     private double purchasePrice;
     private BookStatus status;
     private int copies;
-    private int locationId;
-    private int sectionId;
+    private int location;
+    private int section;
     private String collectionType;
 }

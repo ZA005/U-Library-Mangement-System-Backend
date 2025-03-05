@@ -39,7 +39,7 @@ public class BookCatalog {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id", referencedColumnName = "book_id", nullable = false)
-    private Books bookId;
+    private Books book;
 
     @Column(name = "call_number", nullable = false)
     private String callNumber;
@@ -49,7 +49,7 @@ public class BookCatalog {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "condition_id", referencedColumnName = "id", nullable = false)
-    private Condition conditionId;
+    private Condition condition;
 
     @Column(name = "acquired_date", nullable = false)
     private LocalDate acquiredDate;
@@ -66,11 +66,11 @@ public class BookCatalog {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_id", referencedColumnName = "id", nullable = false)
-    private Location locationId;
+    private Location location;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "section_id", referencedColumnName = "id", nullable = false)
-    private Section sectionId;
+    private Section section;
 
     @Column(name = "collection_type", nullable = false)
     private String collectionType;

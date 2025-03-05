@@ -74,16 +74,16 @@ public class BookServiceImpl implements BookService {
         Books savedBook = bookRepository.save(book);
 
         // Map and save BookCatalog with proper entity references
-        BookCatalog catalog = BookCatalogMapper.toBookCatalog(bookCatalogDTO, savedBook);
-        catalog.setConditionId(conditionRepository.findById(bookCatalogDTO.getConditionId())
+        BookCatalog catalog = BookCatalogMapper.mapToBookCatalog(bookCatalogDTO, savedBook);
+        catalog.setCondition(conditionRepository.findById(bookCatalogDTO.getConditionId())
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Invalid condition ID: " + bookCatalogDTO.getConditionId())));
-        catalog.setLocationId(locationRepository.findById(bookCatalogDTO.getLocationId())
+        catalog.setLocation(locationRepository.findById(bookCatalogDTO.getLocation())
                 .orElseThrow(
-                        () -> new IllegalArgumentException("Invalid location ID: " + bookCatalogDTO.getLocationId())));
-        catalog.setSectionId(sectionRepository.findById(bookCatalogDTO.getSectionId())
+                        () -> new IllegalArgumentException("Invalid location ID: " + bookCatalogDTO.getLocation())));
+        catalog.setSection(sectionRepository.findById(bookCatalogDTO.getSection())
                 .orElseThrow(
-                        () -> new IllegalArgumentException("Invalid section ID: " + bookCatalogDTO.getSectionId())));
+                        () -> new IllegalArgumentException("Invalid section ID: " + bookCatalogDTO.getSection())));
         bookCatalogRepository.save(catalog);
 
         return savedBook;

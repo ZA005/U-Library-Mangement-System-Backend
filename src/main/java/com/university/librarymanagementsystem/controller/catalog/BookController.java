@@ -20,14 +20,14 @@ public class BookController {
         this.bookService = bookService;
     }
 
-    @PostMapping("/admin/save")
+    @PostMapping("/admin/book/save")
     public ResponseEntity<BookRequestDTO> saveBook(@RequestBody BookRequestDTO requestDTO) {
         Books savedBook = bookService.saveBook(requestDTO.getBookDTO(), requestDTO.getBookCatalogDTO());
 
         // Create response DTO with both book and catalog info
         BookRequestDTO responseDTO = new BookRequestDTO(
                 BookMapper.toBookDTO(savedBook),
-                BookCatalogMapper.toBookCatalogDTO(bookService.getSavedBookCatalog(savedBook)));
+                BookCatalogMapper.mapToBookCatalogDTO(bookService.getSavedBookCatalog(savedBook)));
 
         return ResponseEntity.ok(responseDTO);
     }

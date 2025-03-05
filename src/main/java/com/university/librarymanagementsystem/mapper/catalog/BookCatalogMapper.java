@@ -5,34 +5,33 @@ import org.springframework.stereotype.Component;
 import com.university.librarymanagementsystem.dto.catalog.BookCatalogDTO;
 import com.university.librarymanagementsystem.entity.catalog.BookCatalog;
 import com.university.librarymanagementsystem.entity.catalog.book.Books;
+import com.university.librarymanagementsystem.entity.catalog.book.Condition;
 
 @Component
 public class BookCatalogMapper {
 
-    public static BookCatalogDTO toBookCatalogDTO(BookCatalog bookCatalog) {
+    public static BookCatalogDTO mapToBookCatalogDTO(BookCatalog bookCatalog) {
         return new BookCatalogDTO(
                 bookCatalog.getId(),
-                bookCatalog.getBookId().getId(),
+                bookCatalog.getBook().getId(),
                 bookCatalog.getCallNumber(),
                 bookCatalog.getAccessionNumber(),
-                bookCatalog.getConditionId().getId(),
+                bookCatalog.getCondition().getId(),
                 bookCatalog.getAcquiredDate(),
                 bookCatalog.getPurchasePrice(),
                 bookCatalog.getStatus(),
                 bookCatalog.getCopies(),
-                bookCatalog.getLocationId().getId(),
-                bookCatalog.getSectionId().getId(),
+                bookCatalog.getLocation().getId(),
+                bookCatalog.getSection().getId(),
                 bookCatalog.getCollectionType());
     }
 
-    public static BookCatalog toBookCatalog(BookCatalogDTO bookCatalogDTO, Books book) {
+    public static BookCatalog mapToBookCatalog(BookCatalogDTO bookCatalogDTO, Books book) {
         BookCatalog bookCatalog = new BookCatalog();
         bookCatalog.setId(bookCatalogDTO.getId());
-        bookCatalog.setBookId(book);
+        bookCatalog.setBook(book);
         bookCatalog.setCallNumber(bookCatalogDTO.getCallNumber());
         bookCatalog.setAccessionNumber(bookCatalogDTO.getAccessionNumber());
-        bookCatalog.setAcquiredDate(bookCatalogDTO.getAcquiredDate());
-        bookCatalog.setPurchasePrice(bookCatalogDTO.getPurchasePrice());
         bookCatalog.setStatus(bookCatalogDTO.getStatus());
         bookCatalog.setCopies(bookCatalogDTO.getCopies());
         bookCatalog.setCollectionType(bookCatalogDTO.getCollectionType());
