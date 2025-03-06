@@ -17,8 +17,7 @@ public class BookCatalogMapper {
                 bookCatalog.getCopies(),
                 bookCatalog.getCollectionType(),
                 SectionMapper.mapToSectionDTO(bookCatalog.getSection()),
-
-                AcquisitionMapper.mapToAcquiredBookDTO(bookCatalog.getAcquisition()));
+                AcquisitionMapper.mapToAcquisitionDetailsDTO(bookCatalog.getAcquisition()));
     }
 
     public static BookCatalog toBookCatalogEntity(BookCatalogDTO bookCatalogDTO, Section section,

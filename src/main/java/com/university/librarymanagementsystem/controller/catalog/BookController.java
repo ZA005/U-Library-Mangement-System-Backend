@@ -74,9 +74,18 @@ public class BookController {
         }
     }
 
-    @GetMapping("path")
-    public ResponseEntity<List<BookCatalogDTO>> fetchBooksByAuthor(@RequestParam String authorName) {
-        return ResponseEntity.ok(bookService.fetchBooksByAuthor(authorName));
+    @GetMapping("/adminuser/book/fetchByAuthor")
+    public ResponseEntity<List<BookDTO>> fetchBooksByAuthor(@RequestParam String authorName) {
+        try {
+            if (authorName == null || authorName.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST); // 400 Bad Request if authorName is empty
+            }
+
+            return new ResponseEntity<>(bookService.fetchBooksByAuthor(authorName), HttpStatus.OK);
+        } catch (Exception e) {
+            System.err.println("Error fetching all books by authorName: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }

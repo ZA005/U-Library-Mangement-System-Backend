@@ -16,6 +16,6 @@ public class BookCatalogDTO {
     private Integer copies;
     private String collectionType;
     private SectionDTO section;
-    private AcquiredBookDTO acquiredBook;
+    private AcquisitionDetailsDTO acquisitionDetails;
 
 }

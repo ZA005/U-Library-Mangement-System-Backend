@@ -9,10 +9,11 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AcquiredBookDTO {
+public class AcquisitionDetailsDTO {
 
     private int id;
     private String purchase_date;
+    private float purchase_price;
     private String acquired_date;
     private String vendor;
     private String vendor_location;

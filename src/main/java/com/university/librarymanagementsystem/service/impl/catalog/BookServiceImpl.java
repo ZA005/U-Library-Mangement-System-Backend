@@ -46,68 +46,121 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public List<Books> saveBook(BookDTO bookDTO) {
-        // Validate input DTO
+        validateBookDTO(bookDTO);
+
+        BookCatalogDTO bookCatalogDTO = bookDTO.getBookCatalog();
+        validateBookCatalogDTO(bookCatalogDTO);
+
+        Section section = getSection(bookCatalogDTO.getSection().getId());
+        Acquisition acquisition = getAcquisition(bookCatalogDTO.getAcquisitionDetails().getId());
+
+        int copies = getCopies(bookCatalogDTO);
+        String baseAccessionNumber = bookDTO.getAccessionNumber();
+        int startingCopyNumber = getStartingCopyNumber(bookDTO, baseAccessionNumber);
+
+        BookCatalog catalog = saveBookCatalog(bookCatalogDTO, section, acquisition);
+
+        return saveBooks(bookDTO, catalog, copies, baseAccessionNumber, startingCopyNumber);
+    }
+
+    private void validateBookDTO(BookDTO bookDTO) {
         if (bookDTO == null) {
             throw new IllegalArgumentException("BookDTO cannot be null");
         }
+    }
 
-        BookCatalogDTO bookCatalogDTO = bookDTO.getBookCatalog();
+    private void validateBookCatalogDTO(BookCatalogDTO bookCatalogDTO) {
         if (bookCatalogDTO == null) {
             throw new IllegalArgumentException("BookCatalogDTO inside BookDTO cannot be null");
         }
-        int sectionId = bookDTO.getBookCatalog().getSection().getId();
-        int acquisitionId = bookDTO.getBookCatalog().getAcquiredBook().getId();
+        if (bookCatalogDTO.getSection() == null || bookCatalogDTO.getSection().getId() <= 0) {
+            throw new IllegalArgumentException("Section ID must be provided and greater than 0");
+        }
+        if (bookCatalogDTO.getAcquisitionDetails() == null || bookCatalogDTO.getAcquisitionDetails().getId() <= 0) {
+            throw new IllegalArgumentException("Acquisition ID must be provided and greater than 0");
+        }
+    }
 
-        // Validate Section
-        Section section = sectionRepository.findById(sectionId)
+    private Section getSection(int sectionId) {
+        return sectionRepository.findById(sectionId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Section not found with ID: " + sectionId));
-        Acquisition acquisition = acquisitionRepository.findById(acquisitionId)
+    }
+
+    private Acquisition getAcquisition(int acquisitionId) {
+        return acquisitionRepository.findById(acquisitionId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Acquisition not found with ID: " + acquisitionId));
-        // Determine the number of copies
-        Integer copies = bookCatalogDTO.getCopies() != null && bookCatalogDTO.getCopies() > 0
+    }
+
+    private int getCopies(BookCatalogDTO bookCatalogDTO) {
+        return bookCatalogDTO.getCopies() != null && bookCatalogDTO.getCopies() > 0
                 ? bookCatalogDTO.getCopies()
                 : 1;
+    }
 
-        BookCatalog catalog = BookCatalogMapper.toBookCatalogEntity(bookCatalogDTO, section, acquisition);
+    private int getStartingCopyNumber(BookDTO bookDTO, String baseAccessionNumber) {
+        String isbn13 = bookDTO.getIsbn13();
+        List<Books> existingBooks = null;
+        if (isbn13 != null && !isbn13.isEmpty()) {
+            existingBooks = bookRepository.findByIsbn13(isbn13);
+        }
 
-        catalog = bookCatalogRepository.save(catalog);
+        int startingCopyNumber = 1;
+        if (existingBooks != null && !existingBooks.isEmpty()) {
+            String latestAccessionNumber = existingBooks.stream()
+                    .map(Books::getAccessionNumber)
+                    .filter(num -> num != null && num.contains(" c."))
+                    .max((a1, a2) -> {
+                        int num1 = extractCopyNumber(a1);
+                        int num2 = extractCopyNumber(a2);
+                        return Integer.compare(num1, num2);
+                    })
+                    .orElse(null);
 
-        String baseAccessionNumber = bookDTO.getAccessionNumber();
-        List<Books> savedBooks = new ArrayList<>();
-        for (int i = 1; i <= copies; i++) {
-            // Generate accession number for each copy
-            String accessionNumber = baseAccessionNumber + " c." + i;
-
-            // Map BookDTO to Books entity
-            Books book = BookMapper.mapToBook(bookDTO, catalog);
-            // Handle authors
-            List<Author> authors = new ArrayList<>();
-            if (bookDTO.getAuthors() != null && !bookDTO.getAuthors().isEmpty()) {
-                for (String authorName : bookDTO.getAuthors()) {
-                    // Check if author already exists, otherwise create a new one
-                    Author author = authorRepository.findByName(authorName)
-                            .orElseGet(() -> {
-                                Author newAuthor = new Author();
-                                newAuthor.setName(authorName);
-                                newAuthor.setBooks(new ArrayList<>());
-                                return authorRepository.save(newAuthor);
-                            });
-                    // Bidirectional relationship: add the book to the author's books list
-                    author.getBooks().add(book);
-                    authors.add(author);
-                }
+            if (latestAccessionNumber != null) {
+                String[] parts = latestAccessionNumber.split(" c\\.");
+                baseAccessionNumber = parts[0];
+                startingCopyNumber = Integer.parseInt(parts[1]) + 1;
             }
-            // Set the authors on the book
-            book.setAuthors(authors);
-            book.setAccessionNumber(accessionNumber);
+        }
+        return startingCopyNumber;
+    }
 
-            // Save the Books entity
-            Books savedBook = bookRepository.save(book);
-            savedBooks.add(savedBook);
+    private BookCatalog saveBookCatalog(BookCatalogDTO bookCatalogDTO, Section section, Acquisition acquisition) {
+        BookCatalog catalog = BookCatalogMapper.toBookCatalogEntity(bookCatalogDTO, section, acquisition);
+        return bookCatalogRepository.save(catalog);
+    }
+
+    private List<Books> saveBooks(BookDTO bookDTO, BookCatalog catalog, int copies, String baseAccessionNumber,
+            int startingCopyNumber) {
+        List<Books> savedBooks = new ArrayList<>();
+        for (int i = 0; i < copies; i++) {
+            String accessionNumber = baseAccessionNumber + " c." + (startingCopyNumber + i);
+            Books book = BookMapper.mapToBook(bookDTO, catalog);
+            book.setAuthors(getAuthors(bookDTO, book));
+            book.setAccessionNumber(accessionNumber);
+            savedBooks.add(bookRepository.save(book));
         }
         return savedBooks;
+    }
+
+    private List<Author> getAuthors(BookDTO bookDTO, Books book) {
+        List<Author> authors = new ArrayList<>();
+        if (bookDTO.getAuthors() != null && !bookDTO.getAuthors().isEmpty()) {
+            for (String authorName : bookDTO.getAuthors()) {
+                Author author = authorRepository.findByName(authorName)
+                        .orElseGet(() -> {
+                            Author newAuthor = new Author();
+                            newAuthor.setName(authorName);
+                            newAuthor.setBooks(new ArrayList<>());
+                            return authorRepository.save(newAuthor);
+                        });
+                author.getBooks().add(book);
+                authors.add(author);
+            }
+        }
+        return authors;
     }
 
     @Override
@@ -123,9 +176,20 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<BookCatalogDTO> fetchBooksByAuthor(String authorName) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'fetchBooksByAuthor'");
+    public List<BookDTO> fetchBooksByAuthor(String authorName) {
+        List<Books> books = bookRepository.findBooksByAuthorName(authorName);
+        return books.stream()
+                .map(BookMapper::mapToBookDTO)
+                .toList();
+    }
+
+    private int extractCopyNumber(String accessionNumber) {
+        try {
+            String[] parts = accessionNumber.split(" c\\.");
+            return Integer.parseInt(parts[1]);
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
 }
