@@ -9,8 +9,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BookRequestDTO {
+public class SectionDTO {
 
-    private BookDTO bookDTO;
-    private BookCatalogDTO bookCatalogDTO;
+    private int id;
+    private String sectionName;
+    private byte status;
+    private LocationDTO location;
 }

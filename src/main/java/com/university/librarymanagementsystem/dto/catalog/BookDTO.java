@@ -3,6 +3,8 @@ package com.university.librarymanagementsystem.dto.catalog;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.university.librarymanagementsystem.enums.BookStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,6 +17,7 @@ import lombok.Setter;
 public class BookDTO {
 
     private int id;
+    private String accessionNumber;
     private String title;
     private List<String> authors;
     private String isbn10;
@@ -30,5 +33,8 @@ public class BookDTO {
     private LocalDate copyRight;
     private String printType;
     private String format;
+    private BookStatus status;
+    private String condition;
+    private BookCatalogDTO bookCatalog;
 
 }

@@ -1,14 +1,16 @@
 package com.university.librarymanagementsystem.service.catalog;
 
-import com.university.librarymanagementsystem.dto.catalog.BookCatalogDTO;
+import java.util.List;
+
 import com.university.librarymanagementsystem.dto.catalog.BookDTO;
-import com.university.librarymanagementsystem.entity.catalog.BookCatalog;
 import com.university.librarymanagementsystem.entity.catalog.book.Books;
 
 public interface BookService {
 
-    Books saveBook(BookDTO bookDTO, BookCatalogDTO bookCatalogDTO);
+    List<Books> saveBook(BookDTO bookDTO);
 
-    BookCatalog getSavedBookCatalog(Books book);
+    List<BookDTO> fetchAllBooks();
+
+    List<BookDTO> fetchBooksByAuthor(String authorName);
 
 }

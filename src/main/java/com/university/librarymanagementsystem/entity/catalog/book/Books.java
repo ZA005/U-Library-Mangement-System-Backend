@@ -4,13 +4,20 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.university.librarymanagementsystem.entity.catalog.BookCatalog;
+import com.university.librarymanagementsystem.enums.BookStatus;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,8 +36,11 @@ public class Books {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
-    @Column(name = "book_id", nullable = false)
+    @Column(name = "id", nullable = false)
     private int id;
+
+    @Column(name = "accession_number", nullable = false, unique = true)
+    private String accessionNumber;
 
     @Column(name = "title", nullable = false)
     private String title;
@@ -76,5 +86,16 @@ public class Books {
 
     @Column(name = "format", nullable = false)
     private String format;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private BookStatus status;
+
+    @Column(name = "condition_status", nullable = false)
+    private String condition;
+
+    @ManyToOne()
+    @JoinColumn(name = "catalog_id", referencedColumnName = "id", nullable = false)
+    private BookCatalog bookCatalog;
 
 }
