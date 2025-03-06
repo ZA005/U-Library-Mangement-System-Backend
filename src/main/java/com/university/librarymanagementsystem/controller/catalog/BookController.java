@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.university.librarymanagementsystem.dto.catalog.BookCatalogDTO;
 import com.university.librarymanagementsystem.dto.catalog.BookDTO;
+import com.university.librarymanagementsystem.dto.catalog.BookSearchRequestDTO;
 import com.university.librarymanagementsystem.entity.catalog.book.Books;
 import com.university.librarymanagementsystem.mapper.catalog.BookMapper;
 import com.university.librarymanagementsystem.service.catalog.BookService;
@@ -57,6 +57,22 @@ public class BookController {
         }
     }
 
+    @GetMapping("/admin/book/fetchLatestBaseAccession")
+    public ResponseEntity<String> fetchLatestBaseAccession(@RequestParam String isbn13,
+            @RequestParam String locationCodeName) {
+        try {
+            String baseAccession = bookService.fetchLatestBaseAccession(isbn13, locationCodeName);
+            if (baseAccession == null) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+
+            return new ResponseEntity<>(baseAccession, HttpStatus.OK);
+        } catch (Exception e) {
+            System.err.println("Error fetching Base Accession: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @GetMapping("/adminuser/book/fetchAll")
     public ResponseEntity<List<BookDTO>> fetchAllBooks() {
         try {
@@ -88,4 +104,9 @@ public class BookController {
         }
     }
 
+    // @PostMapping("/adminuser/advance-search")
+    // public List<BookDTO> advanceSearch(@RequestBody BookSearchRequestDTO
+    // bookSearchRequest) {
+    // return bookService.advanceSearch(bookSearchRequest);
+    // }
 }

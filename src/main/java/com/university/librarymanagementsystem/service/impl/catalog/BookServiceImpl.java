@@ -2,6 +2,7 @@ package com.university.librarymanagementsystem.service.impl.catalog;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -190,6 +191,69 @@ public class BookServiceImpl implements BookService {
         } catch (Exception e) {
             return 0;
         }
+    }
+
+    @Override
+    public String fetchLatestBaseAccession(String isbn13, String locationCodeName) {
+        // Validate inputs
+        if (isbn13 == null || isbn13.isEmpty()) {
+            throw new IllegalArgumentException("ISBN13 cannot be null or empty");
+        }
+        if (locationCodeName == null || locationCodeName.isEmpty()) {
+            throw new IllegalArgumentException("Location code name cannot be null or empty");
+        }
+
+        // Fetch the latest book by ISBN13 (if it exists)
+        Optional<Books> latestBookByIsbn = bookRepository.findTopByIsbn13OrderByAccessionNumberDesc(isbn13);
+
+        // Case 1: Book exists by ISBN13
+        if (latestBookByIsbn.isPresent()) {
+            String latestAccession = latestBookByIsbn.get().getAccessionNumber();
+            String baseAccession = extractBaseAccession(latestAccession);
+
+            // Check if the base matches the provided locationCodeName
+            if (baseAccession != null && baseAccession.startsWith(locationCodeName + "-")) {
+                return baseAccession; // Matching location code, return existing base
+            } else {
+                // Different location code, fall through to generate a new base
+                return generateNewBaseAccession(locationCodeName);
+            }
+        }
+
+        // Case 2: No book exists for this ISBN13, generate a new base accession number
+        return generateNewBaseAccession(locationCodeName);
+    }
+
+    private String extractBaseAccession(String accessionNumber) {
+        if (accessionNumber == null) {
+            return null;
+        }
+        return accessionNumber.contains(" c.") ? accessionNumber.split(" c\\.")[0] : accessionNumber;
+    }
+
+    /**
+     * Generates a new base accession number based on the location code.
+     * Increments the numeric part of the latest accession number for the location.
+     */
+    private String generateNewBaseAccession(String locationCodeName) {
+        Optional<Books> latestBookByLocation = bookRepository
+                .findTopByAccessionNumberStartingWithOrderByAccessionNumberDesc(locationCodeName);
+
+        if (latestBookByLocation.isPresent()) {
+            String latestAccession = latestBookByLocation.get().getAccessionNumber();
+            String basePart = extractBaseAccession(latestAccession);
+            String numericPart = basePart.replace(locationCodeName + "-", "");
+            int maxNumericPart;
+            try {
+                maxNumericPart = Integer.parseInt(numericPart);
+            } catch (NumberFormatException e) {
+                maxNumericPart = 0;
+            }
+            return locationCodeName + "-" + String.format("%06d", maxNumericPart + 1);
+        }
+
+        // No existing books with this location code, start with 000001
+        return locationCodeName + "-000001";
     }
 
 }
