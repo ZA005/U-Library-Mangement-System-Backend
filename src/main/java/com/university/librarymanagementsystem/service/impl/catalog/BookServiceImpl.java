@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.university.librarymanagementsystem.dto.catalog.BookCatalogDTO;
 import com.university.librarymanagementsystem.dto.catalog.BookDTO;
+import com.university.librarymanagementsystem.entity.catalog.Acquisition;
 import com.university.librarymanagementsystem.entity.catalog.BookCatalog;
 import com.university.librarymanagementsystem.entity.catalog.Section;
 import com.university.librarymanagementsystem.entity.catalog.book.Author;
@@ -15,6 +16,7 @@ import com.university.librarymanagementsystem.enums.BookStatus;
 import com.university.librarymanagementsystem.exception.ResourceNotFoundException;
 import com.university.librarymanagementsystem.mapper.catalog.BookCatalogMapper;
 import com.university.librarymanagementsystem.mapper.catalog.BookMapper;
+import com.university.librarymanagementsystem.repository.catalog.AcquisitionRepository;
 import com.university.librarymanagementsystem.repository.catalog.AuthorRepository;
 import com.university.librarymanagementsystem.repository.catalog.BookCatalogRepository;
 import com.university.librarymanagementsystem.repository.catalog.BookRepository;
@@ -28,15 +30,18 @@ public class BookServiceImpl implements BookService {
     private final BookCatalogRepository bookCatalogRepository;
     private final AuthorRepository authorRepository;
     private final SectionRepository sectionRepository;
+    private final AcquisitionRepository acquisitionRepository;
 
     public BookServiceImpl(BookRepository bookRepository,
             BookCatalogRepository bookCatalogRepository,
             AuthorRepository authorRepository,
-            SectionRepository sectionRepository) {
+            SectionRepository sectionRepository,
+            AcquisitionRepository acquisitionRepository) {
         this.bookRepository = bookRepository;
         this.bookCatalogRepository = bookCatalogRepository;
         this.authorRepository = authorRepository;
         this.sectionRepository = sectionRepository;
+        this.acquisitionRepository = acquisitionRepository;
     }
 
     @Override
@@ -50,18 +55,22 @@ public class BookServiceImpl implements BookService {
         if (bookCatalogDTO == null) {
             throw new IllegalArgumentException("BookCatalogDTO inside BookDTO cannot be null");
         }
+        int sectionId = bookDTO.getBookCatalog().getSection().getId();
+        int acquisitionId = bookDTO.getBookCatalog().getAcquiredBook().getId();
 
         // Validate Section
-        Section section = sectionRepository.findById(bookCatalogDTO.getSectionId())
+        Section section = sectionRepository.findById(sectionId)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Section not found with ID: " + bookCatalogDTO.getSectionId()));
-
+                        "Section not found with ID: " + sectionId));
+        Acquisition acquisition = acquisitionRepository.findById(acquisitionId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Acquisition not found with ID: " + acquisitionId));
         // Determine the number of copies
         Integer copies = bookCatalogDTO.getCopies() != null && bookCatalogDTO.getCopies() > 0
                 ? bookCatalogDTO.getCopies()
                 : 1;
 
-        BookCatalog catalog = BookCatalogMapper.toBookCatalogEntity(bookCatalogDTO, section);
+        BookCatalog catalog = BookCatalogMapper.toBookCatalogEntity(bookCatalogDTO, section, acquisition);
 
         catalog = bookCatalogRepository.save(catalog);
 

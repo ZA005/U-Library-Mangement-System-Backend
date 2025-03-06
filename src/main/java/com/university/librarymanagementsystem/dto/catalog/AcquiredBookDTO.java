@@ -9,13 +9,13 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BookCatalogDTO {
+public class AcquiredBookDTO {
 
     private int id;
-    private String callNumber;
-    private Integer copies;
-    private String collectionType;
-    private SectionDTO section;
-    private AcquiredBookDTO acquiredBook;
+    private String purchase_date;
+    private String acquired_date;
+    private String vendor;
+    private String vendor_location;
+    private String funding_source;
 
 }

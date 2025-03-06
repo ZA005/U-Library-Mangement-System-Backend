@@ -1,7 +1,5 @@
 package com.university.librarymanagementsystem.entity.catalog;
 
-import java.time.LocalDate;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -34,12 +32,6 @@ public class BookCatalog {
     @Column(name = "call_number", nullable = false)
     private String callNumber;
 
-    @Column(name = "acquired_date", nullable = false)
-    private LocalDate acquiredDate;
-
-    @Column(name = "purchase_price", nullable = false)
-    private double purchasePrice;
-
     @Column(name = "copies", nullable = false)
     private Integer copies;
 
@@ -49,4 +41,8 @@ public class BookCatalog {
 
     @Column(name = "collection_type", nullable = false)
     private String collectionType;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "acquisition_id", referencedColumnName = "id", nullable = true)
+    private Acquisition acquisition;
 }

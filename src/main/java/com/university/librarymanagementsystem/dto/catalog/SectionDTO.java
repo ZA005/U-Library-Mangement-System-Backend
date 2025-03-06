@@ -12,7 +12,7 @@ import lombok.Setter;
 public class SectionDTO {
 
     private int id;
-    private int locationId;
     private String sectionName;
     private byte status;
+    private LocationDTO location;
 }

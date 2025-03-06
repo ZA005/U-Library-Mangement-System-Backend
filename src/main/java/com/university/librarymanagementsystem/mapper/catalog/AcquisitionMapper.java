@@ -2,6 +2,7 @@ package com.university.librarymanagementsystem.mapper.catalog;
 
 import org.springframework.stereotype.Component;
 
+import com.university.librarymanagementsystem.dto.catalog.AcquiredBookDTO;
 import com.university.librarymanagementsystem.dto.catalog.AcquisitionDTO;
 import com.university.librarymanagementsystem.entity.catalog.Acquisition;
 
@@ -25,7 +26,7 @@ public class AcquisitionMapper {
 
     }
 
-    public static Acquisition mapToAcquisition(AcquisitionDTO acquisitionDTO) {
+    public static Acquisition mapToAcquisitionEntity(AcquisitionDTO acquisitionDTO) {
         return new Acquisition(
                 acquisitionDTO.getId(),
                 acquisitionDTO.getBook_title(),
@@ -40,5 +41,15 @@ public class AcquisitionMapper {
                 acquisitionDTO.getVendor_location(),
                 acquisitionDTO.getFunding_source(),
                 acquisitionDTO.getStatus());
+    }
+
+    public static AcquiredBookDTO mapToAcquiredBookDTO(Acquisition acquisition) {
+        return new AcquiredBookDTO(
+                acquisition.getId(),
+                acquisition.getPurchase_date(),
+                acquisition.getAcquired_date(),
+                acquisition.getVendor(),
+                acquisition.getVendor_location(),
+                acquisition.getFunding_source());
     }
 }

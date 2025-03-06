@@ -27,7 +27,7 @@ public class AcquisitionServiceImpl implements AcquisitionService {
         });
 
         List<Acquisition> acquisitions = acquisitionDTOs.stream()
-                .map(AcquisitionMapper::mapToAcquisition)
+                .map(AcquisitionMapper::mapToAcquisitionEntity)
                 .collect(Collectors.toList());
 
         for (Acquisition acquisition : acquisitions) {
