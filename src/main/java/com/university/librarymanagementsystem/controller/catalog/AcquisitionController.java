@@ -19,12 +19,14 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping
+@RequestMapping("/adminuser")
 public class AcquisitionController {
     private AcquisitionService service;
 
     @PostMapping("/acquisition/add-record")
     public ResponseEntity<?> addRecords(@RequestBody List<AcquisitionDTO> acquisitionDTOs) {
+        System.out.println("Received Acquisition Records:");
+        acquisitionDTOs.forEach(record -> System.out.println(record));
         try {
             List<AcquisitionDTO> savedRecords = service.addRecords(acquisitionDTOs);
             return new ResponseEntity<>(savedRecords, HttpStatus.CREATED);
