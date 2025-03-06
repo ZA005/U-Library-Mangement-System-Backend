@@ -2,8 +2,6 @@ package com.university.librarymanagementsystem.dto.catalog;
 
 import java.time.LocalDate;
 
-import com.university.librarymanagementsystem.enums.BookStatus;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,15 +14,11 @@ import lombok.Setter;
 public class BookCatalogDTO {
 
     private int id;
-    private int bookId;
+    // private BookDTO book;
     private String callNumber;
-    private String accessionNumber;
-    private int conditionId;
     private LocalDate acquiredDate;
     private double purchasePrice;
-    private BookStatus status;
-    private int copies;
-    private int locationId;
+    private Integer copies;
     private int sectionId;
     private String collectionType;
 }

@@ -4,37 +4,36 @@ import org.springframework.stereotype.Component;
 
 import com.university.librarymanagementsystem.dto.catalog.BookCatalogDTO;
 import com.university.librarymanagementsystem.entity.catalog.BookCatalog;
+import com.university.librarymanagementsystem.entity.catalog.Section;
 import com.university.librarymanagementsystem.entity.catalog.book.Books;
+import com.university.librarymanagementsystem.exception.ResourceNotFoundException;
+import com.university.librarymanagementsystem.repository.catalog.SectionRepository;
 
 @Component
 public class BookCatalogMapper {
+    private static SectionRepository sectionRepository;
 
-    public static BookCatalogDTO toBookCatalogDTO(BookCatalog bookCatalog) {
+    public static BookCatalogDTO mapToBookCatalogDTO(BookCatalog bookCatalog) {
         return new BookCatalogDTO(
                 bookCatalog.getId(),
-                bookCatalog.getBookId().getId(),
+                // BookMapper.mapToBookDTO(bookCatalog.getBook()),
                 bookCatalog.getCallNumber(),
-                bookCatalog.getAccessionNumber(),
-                bookCatalog.getConditionId().getId(),
                 bookCatalog.getAcquiredDate(),
                 bookCatalog.getPurchasePrice(),
-                bookCatalog.getStatus(),
                 bookCatalog.getCopies(),
-                bookCatalog.getLocationId().getId(),
-                bookCatalog.getSectionId().getId(),
+                bookCatalog.getSection().getId(),
                 bookCatalog.getCollectionType());
     }
 
-    public static BookCatalog toBookCatalog(BookCatalogDTO bookCatalogDTO, Books book) {
+    public static BookCatalog toBookCatalogEntity(BookCatalogDTO bookCatalogDTO, Section section) {
         BookCatalog bookCatalog = new BookCatalog();
         bookCatalog.setId(bookCatalogDTO.getId());
-        bookCatalog.setBookId(book);
+        // bookCatalog.setBook(book);
         bookCatalog.setCallNumber(bookCatalogDTO.getCallNumber());
-        bookCatalog.setAccessionNumber(bookCatalogDTO.getAccessionNumber());
         bookCatalog.setAcquiredDate(bookCatalogDTO.getAcquiredDate());
         bookCatalog.setPurchasePrice(bookCatalogDTO.getPurchasePrice());
-        bookCatalog.setStatus(bookCatalogDTO.getStatus());
         bookCatalog.setCopies(bookCatalogDTO.getCopies());
+        bookCatalog.setSection(section);
         bookCatalog.setCollectionType(bookCatalogDTO.getCollectionType());
         return bookCatalog;
     }

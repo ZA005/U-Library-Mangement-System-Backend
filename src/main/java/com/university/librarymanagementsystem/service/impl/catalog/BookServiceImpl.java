@@ -2,23 +2,23 @@ package com.university.librarymanagementsystem.service.impl.catalog;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
 import com.university.librarymanagementsystem.dto.catalog.BookCatalogDTO;
 import com.university.librarymanagementsystem.dto.catalog.BookDTO;
 import com.university.librarymanagementsystem.entity.catalog.BookCatalog;
+import com.university.librarymanagementsystem.entity.catalog.Section;
 import com.university.librarymanagementsystem.entity.catalog.book.Author;
-import com.university.librarymanagementsystem.dto.catalog.AuthorDTO;
 import com.university.librarymanagementsystem.entity.catalog.book.Books;
+import com.university.librarymanagementsystem.enums.BookStatus;
+import com.university.librarymanagementsystem.exception.ResourceNotFoundException;
 import com.university.librarymanagementsystem.mapper.catalog.BookCatalogMapper;
 import com.university.librarymanagementsystem.mapper.catalog.BookMapper;
 import com.university.librarymanagementsystem.repository.catalog.AuthorRepository;
 import com.university.librarymanagementsystem.repository.catalog.BookCatalogRepository;
 import com.university.librarymanagementsystem.repository.catalog.BookRepository;
-import com.university.librarymanagementsystem.repository.catalog.ConditionRepository;
-import com.university.librarymanagementsystem.repository.catalog.LocationRepository;
 import com.university.librarymanagementsystem.repository.catalog.SectionRepository;
 import com.university.librarymanagementsystem.service.catalog.BookService;
 
@@ -28,70 +28,102 @@ public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final BookCatalogRepository bookCatalogRepository;
     private final AuthorRepository authorRepository;
-    private final ConditionRepository conditionRepository;
-    private final LocationRepository locationRepository;
     private final SectionRepository sectionRepository;
 
     public BookServiceImpl(BookRepository bookRepository,
             BookCatalogRepository bookCatalogRepository,
             AuthorRepository authorRepository,
-            ConditionRepository conditionRepository,
-            LocationRepository locationRepository,
             SectionRepository sectionRepository) {
         this.bookRepository = bookRepository;
         this.bookCatalogRepository = bookCatalogRepository;
         this.authorRepository = authorRepository;
-        this.conditionRepository = conditionRepository;
-        this.locationRepository = locationRepository;
         this.sectionRepository = sectionRepository;
     }
 
     @Override
-    public Books saveBook(BookDTO bookDTO, BookCatalogDTO bookCatalogDTO) {
-
-        if (bookDTO == null || bookCatalogDTO == null) {
-            throw new IllegalArgumentException("DTOs cannot be null");
+    public List<Books> saveBook(BookDTO bookDTO) {
+        // Validate input DTO
+        if (bookDTO == null) {
+            throw new IllegalArgumentException("BookDTO cannot be null");
         }
 
-        Books book = BookMapper.toBook(bookDTO);
-        List<Author> authors = new ArrayList<>();
-        if (bookDTO.getAuthors() != null && !bookDTO.getAuthors().isEmpty()) {
-            for (String authorName : bookDTO.getAuthors()) {
-                // Check if author already exists, otherwise create a new one
-                Author author = authorRepository.findByName(authorName)
-                        .orElseGet(() -> {
-                            Author newAuthor = new Author();
-                            newAuthor.setName(authorName);
-                            newAuthor.setBooks(new ArrayList<>()); // Initialize the books list
-                            return authorRepository.save(newAuthor);
-                        });
-                // Bidirectional relationship: add the book to the author's books list
-                author.getBooks().add(book);
-                authors.add(author);
+        BookCatalogDTO bookCatalogDTO = bookDTO.getBookCatalog();
+        if (bookCatalogDTO == null) {
+            throw new IllegalArgumentException("BookCatalogDTO inside BookDTO cannot be null");
+        }
+
+        // Validate Section
+        Section section = sectionRepository.findById(bookCatalogDTO.getSectionId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Section not found with ID: " + bookCatalogDTO.getSectionId()));
+
+        // Determine the number of copies
+        Integer copies = bookCatalogDTO.getCopies() != null && bookCatalogDTO.getCopies() > 0
+                ? bookCatalogDTO.getCopies()
+                : 1;
+
+        BookCatalog catalog = BookCatalogMapper.toBookCatalogEntity(bookCatalogDTO, section);
+
+        // Save the BookCatalog entity
+        catalog = bookCatalogRepository.save(catalog);
+
+        // Step 2: Generate base accession number if not provided
+        String baseAccessionNumber = bookDTO.getAccessionNumber();
+
+        // Step 3: Create and save Books entities based on the number of copies
+        List<Books> savedBooks = new ArrayList<>();
+        for (int i = 1; i <= copies; i++) {
+            // Generate accession number for each copy
+            String accessionNumber = baseAccessionNumber + " c." + i;
+
+            // Map BookDTO to Books entity
+            Books book = BookMapper.mapToBook(bookDTO, catalog);
+            // Handle authors
+            List<Author> authors = new ArrayList<>();
+            if (bookDTO.getAuthors() != null && !bookDTO.getAuthors().isEmpty()) {
+                for (String authorName : bookDTO.getAuthors()) {
+                    // Check if author already exists, otherwise create a new one
+                    Author author = authorRepository.findByName(authorName)
+                            .orElseGet(() -> {
+                                Author newAuthor = new Author();
+                                newAuthor.setName(authorName);
+                                newAuthor.setBooks(new ArrayList<>()); // Initialize the books list
+                                return authorRepository.save(newAuthor);
+                            });
+                    // Bidirectional relationship: add the book to the author's books list
+                    author.getBooks().add(book);
+                    authors.add(author);
+                }
             }
+            // Set the authors on the book
+            book.setAuthors(authors);
+            book.setAccessionNumber(accessionNumber);
+
+            // Save the Books entity
+            Books savedBook = bookRepository.save(book);
+            savedBooks.add(savedBook);
         }
-        book.setAuthors(authors);
-        Books savedBook = bookRepository.save(book);
 
-        // Map and save BookCatalog with proper entity references
-        BookCatalog catalog = BookCatalogMapper.toBookCatalog(bookCatalogDTO, savedBook);
-        catalog.setConditionId(conditionRepository.findById(bookCatalogDTO.getConditionId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Invalid condition ID: " + bookCatalogDTO.getConditionId())));
-        catalog.setLocationId(locationRepository.findById(bookCatalogDTO.getLocationId())
-                .orElseThrow(
-                        () -> new IllegalArgumentException("Invalid location ID: " + bookCatalogDTO.getLocationId())));
-        catalog.setSectionId(sectionRepository.findById(bookCatalogDTO.getSectionId())
-                .orElseThrow(
-                        () -> new IllegalArgumentException("Invalid section ID: " + bookCatalogDTO.getSectionId())));
-        bookCatalogRepository.save(catalog);
-
-        return savedBook;
+        // Step 4: Return the list of saved books
+        return savedBooks;
     }
 
     @Override
-    public BookCatalog getSavedBookCatalog(Books book) {
-        return bookCatalogRepository.findByBookId(book)
-                .orElseThrow(() -> new IllegalStateException("Catalog not found for book ID: " + book.getId()));
+    public List<BookDTO> fetchAllBooks() {
+        // Fetch all books from the repository
+        List<Books> books = bookRepository.findAll();
+
+        return books.stream()
+                .filter(book -> !BookStatus.WEEDED.equals(book.getStatus())
+                        && !BookStatus.ARCHIVED.equals(book.getStatus()))
+                .map(BookMapper::mapToBookDTO)
+                .toList();
     }
+
+    @Override
+    public List<BookCatalogDTO> fetchBooksByAuthor(String authorName) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'fetchBooksByAuthor'");
+    }
+
 }

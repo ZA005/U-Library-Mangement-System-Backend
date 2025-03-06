@@ -42,5 +42,4 @@ public class AuthController {
         RequestResponse response = auth.isActivated(user_id);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
-
 }

@@ -29,7 +29,7 @@ public class Section {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_id", referencedColumnName = "id", nullable = false)
-    private Location locationId;
+    private Location location;
 
     private String sectionName;
 

@@ -2,16 +2,19 @@ package com.university.librarymanagementsystem.mapper.catalog;
 
 import org.springframework.stereotype.Component;
 
+import com.university.librarymanagementsystem.dto.catalog.BookCatalogDTO;
 import com.university.librarymanagementsystem.dto.catalog.BookDTO;
+import com.university.librarymanagementsystem.entity.catalog.BookCatalog;
 import com.university.librarymanagementsystem.entity.catalog.book.Author;
 import com.university.librarymanagementsystem.entity.catalog.book.Books;
 
 @Component
 public class BookMapper {
 
-    public static BookDTO toBookDTO(Books book) {
+    public static BookDTO mapToBookDTO(Books book) {
         return new BookDTO(
                 book.getId(),
+                book.getAccessionNumber(),
                 book.getTitle(),
                 book.getAuthors().stream().map(Author::getName).toList(),
                 book.getIsbn10(),
@@ -26,10 +29,13 @@ public class BookMapper {
                 book.getPublisher(),
                 book.getCopyRight(),
                 book.getPrintType(),
-                book.getFormat());
+                book.getFormat(),
+                book.getStatus(),
+                book.getCondition(),
+                BookCatalogMapper.mapToBookCatalogDTO(book.getBookCatalog()));
     }
 
-    public static Books toBook(BookDTO bookDTO) {
+    public static Books mapToBook(BookDTO bookDTO, BookCatalog bookCatalog) {
         Books book = new Books();
         book.setId(bookDTO.getId());
         book.setTitle(bookDTO.getTitle());
@@ -46,6 +52,10 @@ public class BookMapper {
         book.setCopyRight(bookDTO.getCopyRight());
         book.setPrintType(bookDTO.getPrintType());
         book.setFormat(bookDTO.getFormat());
+        book.setStatus(bookDTO.getStatus());
+        book.setCondition(bookDTO.getCondition());
+        book.setBookCatalog(bookCatalog);
+
         return book;
     }
 
