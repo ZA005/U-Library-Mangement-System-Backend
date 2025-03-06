@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.university.librarymanagementsystem.entity.catalog.BookCatalog;
 import com.university.librarymanagementsystem.enums.BookStatus;
 
@@ -19,7 +18,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -95,10 +93,6 @@ public class Books {
 
     @Column(name = "condition_status", nullable = false)
     private String condition;
-
-    // @OneToMany(mappedBy = "book")
-    // @JsonManagedReference
-    // private List<BookCatalog> bookCatalog;
 
     @ManyToOne()
     @JoinColumn(name = "catalog_id", referencedColumnName = "id", nullable = false)

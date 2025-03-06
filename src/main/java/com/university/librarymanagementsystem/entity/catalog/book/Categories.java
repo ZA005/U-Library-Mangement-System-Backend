@@ -31,7 +31,7 @@ public class Categories {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "category_id")
-    private int categoryId;
+    private int id;
 
     @Column(name = "ddc_code", nullable = false)
     private String ddcCode;

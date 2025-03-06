@@ -14,7 +14,6 @@ import lombok.Setter;
 public class BookCatalogDTO {
 
     private int id;
-    // private BookDTO book;
     private String callNumber;
     private LocalDate acquiredDate;
     private double purchasePrice;

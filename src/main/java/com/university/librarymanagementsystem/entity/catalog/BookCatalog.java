@@ -2,9 +2,6 @@ package com.university.librarymanagementsystem.entity.catalog;
 
 import java.time.LocalDate;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.university.librarymanagementsystem.entity.catalog.book.Books;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -33,12 +30,6 @@ public class BookCatalog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private int id;
-
-    // @ManyToOne()
-    // @JoinColumn(name = "book_id", referencedColumnName = "book_id", nullable =
-    // false)
-    // @JsonBackReference
-    // private Books book;
 
     @Column(name = "call_number", nullable = false)
     private String callNumber;

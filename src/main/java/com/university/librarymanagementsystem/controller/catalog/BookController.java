@@ -3,7 +3,6 @@ package com.university.librarymanagementsystem.controller.catalog;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.university.librarymanagementsystem.dto.catalog.BookCatalogDTO;
 import com.university.librarymanagementsystem.dto.catalog.BookDTO;
-import com.university.librarymanagementsystem.entity.catalog.BookCatalog;
 import com.university.librarymanagementsystem.entity.catalog.book.Books;
-import com.university.librarymanagementsystem.mapper.catalog.BookCatalogMapper;
 import com.university.librarymanagementsystem.mapper.catalog.BookMapper;
 import com.university.librarymanagementsystem.service.catalog.BookService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,16 +37,13 @@ public class BookController {
                 errorResponse.put("message", "BookCatalogDTO cannot be null");
                 return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
             }
-
-            // Save the BookCatalog using the service
             List<Books> savedBooks = bookService.saveBook(bookDTO);
 
-            // Map the saved BookCatalog to BookCatalogDTO for the response
             List<BookDTO> responseDTOs = savedBooks.stream()
                     .map(BookMapper::mapToBookDTO)
                     .toList();
-
             return new ResponseEntity<>(responseDTOs, HttpStatus.CREATED);
+
         } catch (IllegalArgumentException e) {
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("success", "false");

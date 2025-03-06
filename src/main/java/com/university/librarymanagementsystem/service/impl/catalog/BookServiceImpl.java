@@ -2,7 +2,6 @@ package com.university.librarymanagementsystem.service.impl.catalog;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -64,13 +63,9 @@ public class BookServiceImpl implements BookService {
 
         BookCatalog catalog = BookCatalogMapper.toBookCatalogEntity(bookCatalogDTO, section);
 
-        // Save the BookCatalog entity
         catalog = bookCatalogRepository.save(catalog);
 
-        // Step 2: Generate base accession number if not provided
         String baseAccessionNumber = bookDTO.getAccessionNumber();
-
-        // Step 3: Create and save Books entities based on the number of copies
         List<Books> savedBooks = new ArrayList<>();
         for (int i = 1; i <= copies; i++) {
             // Generate accession number for each copy
@@ -87,7 +82,7 @@ public class BookServiceImpl implements BookService {
                             .orElseGet(() -> {
                                 Author newAuthor = new Author();
                                 newAuthor.setName(authorName);
-                                newAuthor.setBooks(new ArrayList<>()); // Initialize the books list
+                                newAuthor.setBooks(new ArrayList<>());
                                 return authorRepository.save(newAuthor);
                             });
                     // Bidirectional relationship: add the book to the author's books list
@@ -103,8 +98,6 @@ public class BookServiceImpl implements BookService {
             Books savedBook = bookRepository.save(book);
             savedBooks.add(savedBook);
         }
-
-        // Step 4: Return the list of saved books
         return savedBooks;
     }
 
