@@ -6,5 +6,6 @@ public enum BookStatus {
     LOANED_OUT,
     WEEDED,
     ARCHIVED,
-    IN_PROCCESSING
+    IN_PROCCESSING,
+    LOST
 }
