@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.university.librarymanagementsystem.dto.catalog.BarcodeRequestDTO;
 import com.university.librarymanagementsystem.dto.catalog.BookCatalogDTO;
 import com.university.librarymanagementsystem.dto.catalog.BookDTO;
 import com.university.librarymanagementsystem.entity.catalog.Acquisition;
@@ -62,6 +63,120 @@ public class BookServiceImpl implements BookService {
         BookCatalog catalog = saveBookCatalog(bookCatalogDTO, section, acquisition);
 
         return saveBooks(bookDTO, catalog, copies, baseAccessionNumber, startingCopyNumber);
+    }
+
+    @Override
+    public List<BookDTO> fetchAllBooks() {
+        List<Books> books = bookRepository.findAll();
+
+        return filterActiveBooks(books).stream()
+                .map(BookMapper::mapToBookDTO)
+                .toList();
+    }
+
+    @Override
+    public List<BookDTO> fetchBooksByAuthor(String authorName) {
+        List<Books> books = bookRepository.findBooksByAuthorName(authorName);
+        return filterActiveBooks(books).stream().map(BookMapper::mapToBookDTO).toList();
+    }
+
+    @Override
+    public String fetchLatestBaseAccession(String isbn13, String locationCodeName) {
+        // Validate inputs
+        if (isbn13 == null || isbn13.isEmpty()) {
+            throw new IllegalArgumentException("ISBN13 cannot be null or empty");
+        }
+        if (locationCodeName == null || locationCodeName.isEmpty()) {
+            throw new IllegalArgumentException("Location code name cannot be null or empty");
+        }
+
+        // Fetch the latest book by ISBN13 (if it exists)
+        Optional<Books> latestBookByIsbn = bookRepository.findTopByIsbn13OrderByAccessionNumberDesc(isbn13);
+
+        // Case 1: Book exists by ISBN13
+        if (latestBookByIsbn.isPresent()) {
+            String latestAccession = latestBookByIsbn.get().getAccessionNumber();
+            String baseAccession = extractBaseAccession(latestAccession);
+
+            // Check if the base matches the provided locationCodeName
+            if (baseAccession != null && baseAccession.startsWith(locationCodeName + "-")) {
+                return baseAccession; // Matching location code, return existing base
+            } else {
+                // Different location code, fall through to generate a new base
+                return generateNewBaseAccession(locationCodeName);
+            }
+        }
+
+        // Case 2: No book exists for this ISBN13, generate a new base accession number
+        return generateNewBaseAccession(locationCodeName);
+    }
+
+    @Override
+    public List<BarcodeRequestDTO> fetchAllAccessionNumberWithSection() {
+        List<Books> books = bookRepository.findAll();
+        return filterActiveBooks(books).stream()
+                .map(BookMapper::mapToBarcodeRequestDTO)
+                .toList();
+    }
+
+    @Override
+    public List<BookDTO> fetchBookByIsbn13(String isbn13) {
+        List<Books> books = bookRepository.findByIsbn13(isbn13);
+
+        return filterActiveBooks(books).stream().map(BookMapper::mapToBookDTO).toList();
+    }
+
+    // HELPER METHODS
+    private List<Books> filterActiveBooks(List<Books> books) {
+        return books.stream()
+                .filter(book -> !BookStatus.WEEDED.equals(book.getStatus())
+                        && !BookStatus.ARCHIVED.equals(book.getStatus()))
+                .toList();
+    }
+
+    private int extractCopyNumber(String accessionNumber) {
+        try {
+            String[] parts = accessionNumber.split(" c\\.");
+            return Integer.parseInt(parts[1]);
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    private String extractBaseAccession(String accessionNumber) {
+        if (accessionNumber == null) {
+            return null;
+        }
+        return accessionNumber.contains(" c.") ? accessionNumber.split(" c\\.")[0] : accessionNumber;
+    }
+
+    /**
+     * Generates a new base accession number based on the location code.
+     * Increments the numeric part of the latest accession number for the location.
+     */
+    private String generateNewBaseAccession(String locationCodeName) {
+        Optional<Books> latestBookByLocation = bookRepository
+                .findTopByAccessionNumberStartingWithOrderByAccessionNumberDesc(locationCodeName);
+
+        if (latestBookByLocation.isPresent()) {
+            String latestAccession = latestBookByLocation.get().getAccessionNumber();
+            String basePart = extractBaseAccession(latestAccession);
+            if (basePart != null) {
+                String numericPart = basePart.replace(locationCodeName + "-", "");
+                int maxNumericPart;
+                try {
+                    maxNumericPart = Integer.parseInt(numericPart);
+                } catch (NumberFormatException e) {
+                    maxNumericPart = 0;
+                }
+                return locationCodeName + "-" + String.format("%06d", maxNumericPart + 1);
+            } else {
+                return locationCodeName + "-000001";
+            }
+        }
+
+        // No existing books with this location code, start with 000001
+        return locationCodeName + "-000001";
     }
 
     private void validateBookDTO(BookDTO bookDTO) {
@@ -162,98 +277,6 @@ public class BookServiceImpl implements BookService {
             }
         }
         return authors;
-    }
-
-    @Override
-    public List<BookDTO> fetchAllBooks() {
-        // Fetch all books from the repository
-        List<Books> books = bookRepository.findAll();
-
-        return books.stream()
-                .filter(book -> !BookStatus.WEEDED.equals(book.getStatus())
-                        && !BookStatus.ARCHIVED.equals(book.getStatus()))
-                .map(BookMapper::mapToBookDTO)
-                .toList();
-    }
-
-    @Override
-    public List<BookDTO> fetchBooksByAuthor(String authorName) {
-        List<Books> books = bookRepository.findBooksByAuthorName(authorName);
-        return books.stream()
-                .map(BookMapper::mapToBookDTO)
-                .toList();
-    }
-
-    private int extractCopyNumber(String accessionNumber) {
-        try {
-            String[] parts = accessionNumber.split(" c\\.");
-            return Integer.parseInt(parts[1]);
-        } catch (Exception e) {
-            return 0;
-        }
-    }
-
-    @Override
-    public String fetchLatestBaseAccession(String isbn13, String locationCodeName) {
-        // Validate inputs
-        if (isbn13 == null || isbn13.isEmpty()) {
-            throw new IllegalArgumentException("ISBN13 cannot be null or empty");
-        }
-        if (locationCodeName == null || locationCodeName.isEmpty()) {
-            throw new IllegalArgumentException("Location code name cannot be null or empty");
-        }
-
-        // Fetch the latest book by ISBN13 (if it exists)
-        Optional<Books> latestBookByIsbn = bookRepository.findTopByIsbn13OrderByAccessionNumberDesc(isbn13);
-
-        // Case 1: Book exists by ISBN13
-        if (latestBookByIsbn.isPresent()) {
-            String latestAccession = latestBookByIsbn.get().getAccessionNumber();
-            String baseAccession = extractBaseAccession(latestAccession);
-
-            // Check if the base matches the provided locationCodeName
-            if (baseAccession != null && baseAccession.startsWith(locationCodeName + "-")) {
-                return baseAccession; // Matching location code, return existing base
-            } else {
-                // Different location code, fall through to generate a new base
-                return generateNewBaseAccession(locationCodeName);
-            }
-        }
-
-        // Case 2: No book exists for this ISBN13, generate a new base accession number
-        return generateNewBaseAccession(locationCodeName);
-    }
-
-    private String extractBaseAccession(String accessionNumber) {
-        if (accessionNumber == null) {
-            return null;
-        }
-        return accessionNumber.contains(" c.") ? accessionNumber.split(" c\\.")[0] : accessionNumber;
-    }
-
-    /**
-     * Generates a new base accession number based on the location code.
-     * Increments the numeric part of the latest accession number for the location.
-     */
-    private String generateNewBaseAccession(String locationCodeName) {
-        Optional<Books> latestBookByLocation = bookRepository
-                .findTopByAccessionNumberStartingWithOrderByAccessionNumberDesc(locationCodeName);
-
-        if (latestBookByLocation.isPresent()) {
-            String latestAccession = latestBookByLocation.get().getAccessionNumber();
-            String basePart = extractBaseAccession(latestAccession);
-            String numericPart = basePart.replace(locationCodeName + "-", "");
-            int maxNumericPart;
-            try {
-                maxNumericPart = Integer.parseInt(numericPart);
-            } catch (NumberFormatException e) {
-                maxNumericPart = 0;
-            }
-            return locationCodeName + "-" + String.format("%06d", maxNumericPart + 1);
-        }
-
-        // No existing books with this location code, start with 000001
-        return locationCodeName + "-000001";
     }
 
 }
