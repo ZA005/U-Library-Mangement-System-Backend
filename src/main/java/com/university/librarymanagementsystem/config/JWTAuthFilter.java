@@ -32,14 +32,6 @@ public class JWTAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // Exclude specific paths from being filtered
-        // String requestPath = request.getServletPath();
-        // if (requestPath.startsWith("/verify/") || requestPath.startsWith("/public/"))
-        // {
-        // filterChain.doFilter(request, response);
-        // return;
-        // }
-
         final String authHeader = request.getHeader("Authorization");
         final String jwtToken;
         final String userEmail;

@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.university.librarymanagementsystem.dto.catalog.BookDTO;
 import com.university.librarymanagementsystem.dto.catalog.BookSearchRequestDTO;
 import com.university.librarymanagementsystem.entity.catalog.book.Books;
+import com.university.librarymanagementsystem.enums.BookStatus;
 import com.university.librarymanagementsystem.mapper.catalog.BookMapper;
+import com.university.librarymanagementsystem.repository.catalog.BookRepository;
 import com.university.librarymanagementsystem.service.catalog.BookService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,9 +24,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class BookController {
 
     private BookService bookService;
+    private BookRepository bookRepository;
 
-    public BookController(BookService bookService) {
+    public BookController(BookService bookService, BookRepository bookRepository) {
         this.bookService = bookService;
+        this.bookRepository = bookRepository;
     }
 
     @PostMapping("/admin/book/save")
@@ -104,9 +108,11 @@ public class BookController {
         }
     }
 
-    // @PostMapping("/adminuser/advance-search")
-    // public List<BookDTO> advanceSearch(@RequestBody BookSearchRequestDTO
-    // bookSearchRequest) {
-    // return bookService.advanceSearch(bookSearchRequest);
-    // }
+    @PostMapping("/adminuser/advance-search")
+    public List<BookDTO> advanceSearch(@RequestBody BookSearchRequestDTO request) {
+        List<Books> books = bookRepository.advanceSearchBooks(request);
+        return books.stream().filter(book -> !book.getStatus().equals(BookStatus.WEEDED) &&
+                !book.getStatus().equals(BookStatus.ARCHIVED))
+                .map(BookMapper::mapToBookDTO).toList();
+    }
 }
