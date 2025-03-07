@@ -3,6 +3,9 @@ package com.university.librarymanagementsystem.service.impl.catalog;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.university.librarymanagementsystem.dto.catalog.AcquisitionDTO;
@@ -49,11 +52,11 @@ public class AcquisitionServiceImpl implements AcquisitionService {
     }
 
     @Override
-    public List<AcquisitionDTO> getPendingCatalogRecords() {
-        List<Acquisition> pendingRecords = repository.getPendingRecords();
+    public Page<AcquisitionDTO> getPendingCatalogRecords(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Acquisition> pendingRecords = repository.getPendingRecords(pageable);
 
-        return pendingRecords.stream().map((pendingRecord) -> AcquisitionMapper.mapToAcquisitionDTO(pendingRecord))
-                .collect(Collectors.toList());
+        return pendingRecords.map(AcquisitionMapper::mapToAcquisitionDTO);
     }
 
     @Override
