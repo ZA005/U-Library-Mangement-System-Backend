@@ -2,6 +2,7 @@ package com.university.librarymanagementsystem.service.user;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -19,8 +20,7 @@ public class JWTUtils {
     private SecretKey Key;
     private static final long EXPIRATION_TIME = 21600000; // 6 hours
 
-    public JWTUtils() {
-        String secretString = "79PXA5V90ICRVV4NLQN5KCYRBYHNW9LD414H79UW2MZZIJ3RPPAKM0NPIC8INMBXEORC9787QKJRD8HZI516WYSGTU9VLQ5QQQU9G4U5QHT24G6KL4199SWOY1F5ERDK";
+    public JWTUtils(@Value("${jwt.secret}") String secretString) {
         byte[] keyBytes = Base64.getDecoder().decode(secretString.getBytes(StandardCharsets.UTF_8));
         this.Key = new SecretKeySpec(keyBytes, "HmacSHA256");
     }
