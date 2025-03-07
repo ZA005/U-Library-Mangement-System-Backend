@@ -9,6 +9,8 @@ public interface BookService {
 
     List<Books> saveBook(BookDTO bookDTO);
 
+    String fetchLatestBaseAccession(String isbn13, String locationCodeName);
+
     List<BookDTO> fetchAllBooks();
 
     List<BookDTO> fetchBooksByAuthor(String authorName);
