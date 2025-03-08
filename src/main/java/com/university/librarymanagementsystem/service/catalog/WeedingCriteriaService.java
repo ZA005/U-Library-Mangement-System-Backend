@@ -1,5 +1,7 @@
 package com.university.librarymanagementsystem.service.catalog;
 
+import java.util.List;
+
 import com.university.librarymanagementsystem.dto.catalog.WeedingCriteriaDTO;
 
 public interface WeedingCriteriaService {
@@ -8,5 +10,9 @@ public interface WeedingCriteriaService {
 
     WeedingCriteriaDTO updateWeedingCriteria(WeedingCriteriaDTO weedingCriteriaDTO);
 
-    void deleteCriteria(int id);
+    boolean deleteCriteria(int id);
+
+    List<WeedingCriteriaDTO> fetchAllWeedingCriteria();
+
+    WeedingCriteriaDTO fetchWeedingCriteriaById(int id);
 }

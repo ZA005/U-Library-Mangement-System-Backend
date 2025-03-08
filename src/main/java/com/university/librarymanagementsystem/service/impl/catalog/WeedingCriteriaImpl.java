@@ -1,5 +1,7 @@
 package com.university.librarymanagementsystem.service.impl.catalog;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.university.librarymanagementsystem.dto.catalog.WeedingCriteriaDTO;
@@ -39,8 +41,32 @@ public class WeedingCriteriaImpl implements WeedingCriteriaService {
     }
 
     @Override
-    public void deleteCriteria(int id) {
-        weedingCriteriaRepository.deleteById(id);
+    public boolean deleteCriteria(int id) {
+        try {
+            if (!weedingCriteriaRepository.existsById(id)) {
+                return false;
+            }
+            weedingCriteriaRepository.deleteById(id);
+            return true;
+        } catch (Exception e) {
+            System.err.println("Error deleting criteria with id " + id + ": " + e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public List<WeedingCriteriaDTO> fetchAllWeedingCriteria() {
+        return weedingCriteriaRepository.findAll().stream()
+                .map(WeedingCriteriaMapper::mapToWeedingCriteriaDTO)
+                .toList();
+    }
+
+    @Override
+    public WeedingCriteriaDTO fetchWeedingCriteriaById(int id) {
+        WeedingCriteria existingCriteria = weedingCriteriaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Weeding Criteria not found for id: " + id));
+
+        return WeedingCriteriaMapper.mapToWeedingCriteriaDTO(existingCriteria);
     }
 
     // HELPER METHODS

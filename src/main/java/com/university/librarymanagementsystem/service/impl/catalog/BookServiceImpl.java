@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.university.librarymanagementsystem.dto.catalog.BarcodeRequestDTO;
 import com.university.librarymanagementsystem.dto.catalog.BookCatalogDTO;
 import com.university.librarymanagementsystem.dto.catalog.BookDTO;
+import com.university.librarymanagementsystem.dto.catalog.WeedInfoDTO;
 import com.university.librarymanagementsystem.entity.catalog.Acquisition;
 import com.university.librarymanagementsystem.entity.catalog.BookCatalog;
 import com.university.librarymanagementsystem.entity.catalog.Section;
@@ -124,6 +125,22 @@ public class BookServiceImpl implements BookService {
         List<Books> books = bookRepository.findByIsbn13(isbn13);
 
         return filterActiveBooks(books).stream().map(BookMapper::mapToBookDTO).toList();
+    }
+
+    @Override
+    public void weedBook(WeedInfoDTO weedInfoDTO) {
+        Books bookToWeed = bookRepository.findById(weedInfoDTO.getBookId())
+                .orElseThrow(() -> new ResourceNotFoundException("Book not found with ID: " + weedInfoDTO.getBookId()));
+        BookStatus status = BookStatus.AVAILABLE;
+
+        if (weedInfoDTO.getWeedStatus().toString().equals(BookStatus.WEEDED.name())) {
+            status = BookStatus.WEEDED;
+        } else if (weedInfoDTO.getWeedStatus().toString().equals(BookStatus.ARCHIVED.name())) {
+            status = BookStatus.ARCHIVED;
+        }
+
+        bookToWeed.setStatus(status);
+        bookRepository.save(bookToWeed);
     }
 
     // HELPER METHODS
