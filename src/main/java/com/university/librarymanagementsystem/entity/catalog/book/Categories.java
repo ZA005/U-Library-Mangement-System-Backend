@@ -30,7 +30,7 @@ public class Categories {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "category_id")
+    @Column(name = "id")
     private int id;
 
     @Column(name = "ddc_code", nullable = false)
@@ -40,10 +40,10 @@ public class Categories {
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_category_id", referencedColumnName = "category_id", nullable = true)
+    @JoinColumn(name = "parent_category_id", referencedColumnName = "id", nullable = true)
     private Categories parentCategoryId;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "category_books", joinColumns = @JoinColumn(name = "category_id"), inverseJoinColumns = @JoinColumn(name = "book_id"))
+    @JoinTable(name = "category_books", joinColumns = @JoinColumn(name = "id"), inverseJoinColumns = @JoinColumn(name = "book_id"))
     private List<Books> books = new ArrayList<>();
 }

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.university.librarymanagementsystem.dto.catalog.BarcodeRequestDTO;
 import com.university.librarymanagementsystem.dto.catalog.BookDTO;
 import com.university.librarymanagementsystem.dto.catalog.BookSearchRequestDTO;
+import com.university.librarymanagementsystem.dto.catalog.CallNumberRequestDTO;
 import com.university.librarymanagementsystem.entity.catalog.book.Books;
 import com.university.librarymanagementsystem.enums.BookStatus;
 import com.university.librarymanagementsystem.mapper.catalog.BookMapper;
@@ -79,6 +80,44 @@ public class BookController {
         }
     }
 
+    @GetMapping("/admin/book/fetchAllAccessionNumber")
+    public ResponseEntity<List<BarcodeRequestDTO>> fetchAllAccessionNumberWithSection() {
+        try {
+            List<BarcodeRequestDTO> barcodeRequestDTOs = bookService.fetchAllAccessionNumberWithSection();
+            if (barcodeRequestDTOs == null || barcodeRequestDTOs.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+            return new ResponseEntity<>(barcodeRequestDTOs, HttpStatus.OK);
+        } catch (Exception e) {
+            System.err.println("Error fetching all Accession Number and Section: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/adminuser/book/generateCallNumber")
+    public ResponseEntity<String> generateCallNumber(@RequestBody CallNumberRequestDTO request) {
+        try {
+            if (request.getTitle().isEmpty() && request.getCategory().isBlank()
+                    && request.getAuthors().isEmpty() && request.getPublishedDate() == null) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+
+            String callNumber = bookService.generateCallNumber(
+                    request.getCategory(),
+                    request.getAuthors(),
+                    request.getPublishedDate(),
+                    request.getTitle());
+            if ("Class number not found".equals(callNumber)) {
+                return new ResponseEntity<>(callNumber, HttpStatus.NOT_FOUND);
+            }
+
+            return new ResponseEntity<>(callNumber, HttpStatus.OK);
+        } catch (Exception e) {
+            System.err.println("Error generating Call Number: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @GetMapping("/adminuser/book/fetchAll")
     public ResponseEntity<List<BookDTO>> fetchAllBooks() {
         try {
@@ -123,20 +162,6 @@ public class BookController {
             return new ResponseEntity<>(bookDTO, HttpStatus.OK);
         } catch (Exception e) {
             System.err.println("Error fetching all books by authorName: " + e.getMessage());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @GetMapping("/admin/book/fetchAllAccessionNumber")
-    public ResponseEntity<List<BarcodeRequestDTO>> fetchAllAccessionNumberWithSection() {
-        try {
-            List<BarcodeRequestDTO> barcodeRequestDTOs = bookService.fetchAllAccessionNumberWithSection();
-            if (barcodeRequestDTOs == null || barcodeRequestDTOs.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-            return new ResponseEntity<>(barcodeRequestDTOs, HttpStatus.OK);
-        } catch (Exception e) {
-            System.err.println("Error fetching all Accession Number and Section: " + e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

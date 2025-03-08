@@ -32,7 +32,6 @@ public class WeedingStatusController {
         } catch (Exception e) {
             System.err.println("Error fetching all the WeedingStatus: " + e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-
         }
     }
 }
