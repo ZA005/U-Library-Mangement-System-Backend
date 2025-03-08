@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.university.librarymanagementsystem.dto.catalog.BarcodeRequestDTO;
 import com.university.librarymanagementsystem.dto.catalog.BookDTO;
 import com.university.librarymanagementsystem.dto.catalog.BookSearchRequestDTO;
 import com.university.librarymanagementsystem.entity.catalog.book.Books;
@@ -18,6 +19,7 @@ import com.university.librarymanagementsystem.mapper.catalog.BookMapper;
 import com.university.librarymanagementsystem.repository.catalog.BookRepository;
 import com.university.librarymanagementsystem.service.catalog.BookService;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
@@ -108,11 +110,49 @@ public class BookController {
         }
     }
 
-    @PostMapping("/adminuser/advance-search")
-    public List<BookDTO> advanceSearch(@RequestBody BookSearchRequestDTO request) {
-        List<Books> books = bookRepository.advanceSearchBooks(request);
-        return books.stream().filter(book -> !book.getStatus().equals(BookStatus.WEEDED) &&
-                !book.getStatus().equals(BookStatus.ARCHIVED))
-                .map(BookMapper::mapToBookDTO).toList();
+    @PostMapping("/adminuser/book/advanceSearch")
+    public ResponseEntity<List<BookDTO>> advanceSearch(@RequestBody BookSearchRequestDTO request) {
+        if (request == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        try {
+            List<Books> books = bookRepository.advanceSearchBooks(request);
+            List<BookDTO> bookDTO = books.stream().filter(book -> !book.getStatus().equals(BookStatus.WEEDED) &&
+                    !book.getStatus().equals(BookStatus.ARCHIVED))
+                    .map(BookMapper::mapToBookDTO).toList();
+            return new ResponseEntity<>(bookDTO, HttpStatus.OK);
+        } catch (Exception e) {
+            System.err.println("Error fetching all books by authorName: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
+
+    @GetMapping("/admin/book/fetchAllAccessionNumber")
+    public ResponseEntity<List<BarcodeRequestDTO>> fetchAllAccessionNumberWithSection() {
+        try {
+            List<BarcodeRequestDTO> barcodeRequestDTOs = bookService.fetchAllAccessionNumberWithSection();
+            if (barcodeRequestDTOs == null || barcodeRequestDTOs.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+            return new ResponseEntity<>(barcodeRequestDTOs, HttpStatus.OK);
+        } catch (Exception e) {
+            System.err.println("Error fetching all Accession Number and Section: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/adminuser/book/fetchByIsbn/{isbn13}")
+    public ResponseEntity<List<BookDTO>> fetchBooksByISBN13(@PathVariable String isbn13) {
+        if (isbn13 == null || isbn13.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        try {
+            return new ResponseEntity<>(bookService.fetchBookByIsbn13(isbn13), HttpStatus.OK);
+
+        } catch (Exception e) {
+            System.err.println("Error fetching books by isbn13: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }

@@ -2,7 +2,7 @@ package com.university.librarymanagementsystem.mapper.catalog;
 
 import org.springframework.stereotype.Component;
 
-import com.university.librarymanagementsystem.dto.catalog.BookCatalogDTO;
+import com.university.librarymanagementsystem.dto.catalog.BarcodeRequestDTO;
 import com.university.librarymanagementsystem.dto.catalog.BookDTO;
 import com.university.librarymanagementsystem.entity.catalog.BookCatalog;
 import com.university.librarymanagementsystem.entity.catalog.book.Author;
@@ -57,6 +57,12 @@ public class BookMapper {
         book.setBookCatalog(bookCatalog);
 
         return book;
+    }
+
+    public static BarcodeRequestDTO mapToBarcodeRequestDTO(Books book) {
+        return new BarcodeRequestDTO(
+                book.getAccessionNumber(),
+                book.getBookCatalog().getSection().getSectionName());
     }
 
 }
