@@ -24,4 +24,19 @@ public interface BookRepository extends JpaRepository<Books, Integer>, BookCusto
     Optional<Books> findTopByIsbn13OrderByAccessionNumberDesc(String isbn13);
 
     Optional<Books> findTopByAccessionNumberStartingWithOrderByAccessionNumberDesc(String accessionNumber);
+
+    @Query("SELECT b FROM Books b JOIN b.bookCatalog bc " +
+            "WHERE (CAST(SUBSTRING(bc.callNumber, 1, 3) AS integer) BETWEEN :ddcStart AND :ddcEnd) " +
+            "AND b.language = :language")
+    List<Books> findBooksByLanguageAndCallNumberRange(
+            @Param("ddcStart") int ddcStart,
+            @Param("ddcEnd") int ddcEnd,
+            @Param("language") String language);
+
+    @Query("SELECT COALESCE(COUNT(b) - 1, 0) " +
+            "FROM Books b " +
+            "WHERE b.isbn13 = :isbn13 " +
+            "GROUP BY b.isbn13 " +
+            "HAVING COUNT(b) > 1")
+    Long getTotalDuplicatedBooks(@Param("isbn13") String isbn13);
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.university.librarymanagementsystem.dto.catalog.BarcodeRequestDTO;
 import com.university.librarymanagementsystem.dto.catalog.BookDTO;
+import com.university.librarymanagementsystem.dto.catalog.WeedInfoDTO;
 import com.university.librarymanagementsystem.entity.catalog.book.Books;
 
 public interface BookService {
@@ -19,5 +20,10 @@ public interface BookService {
     List<BarcodeRequestDTO> fetchAllAccessionNumberWithSection();
 
     List<BookDTO> fetchBookByIsbn13(String isbn13);
+
+    void weedBook(WeedInfoDTO weedInfoDTO);
+
+    String generateCallNumber(String category, List<String> authors,
+            String publishedDate, String title);
 
 }
