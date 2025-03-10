@@ -11,10 +11,10 @@ public class CourseMapper {
 
     public static CourseDTO mapToCourseDTO(Course course) {
         return new CourseDTO(
-                course.getCourse_id(),
+                course.getId(),
                 course.getCurriculum().getId(),
                 course.getCurriculum().getRevision_no(),
-                course.getCurriculum().getProgram().getProgram_id(),
+                course.getCurriculum().getProgram().getId(),
                 course.getCurriculum().getProgram().getCode(),
                 course.getCurriculum().getProgram().getDescription(),
                 course.getCourse_code(),
@@ -29,7 +29,7 @@ public class CourseMapper {
         Curriculum curr = new Curriculum();
         curr.setId(courseDTO.getCurr_id());
         return new Course(
-                courseDTO.getCourse_id(),
+                courseDTO.getId(),
                 curr,
                 courseDTO.getCourse_code(),
                 courseDTO.getCourse_name(),

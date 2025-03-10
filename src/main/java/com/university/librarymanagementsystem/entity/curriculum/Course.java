@@ -22,8 +22,8 @@ import lombok.Setter;
 public class Course {
 
     @Id
-    // @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int course_id;
+    @Column(name = "course_id", nullable = false)
+    private int id;
 
     @ManyToOne
     @JoinColumn(name = "curr_id", nullable = false)

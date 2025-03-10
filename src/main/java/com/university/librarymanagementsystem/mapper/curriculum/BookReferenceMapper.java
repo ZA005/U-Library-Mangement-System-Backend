@@ -12,7 +12,7 @@ public class BookReferenceMapper {
     public static BookReferenceDTO mapToBookRefDTO(BookReference bookRef) {
         return new BookReferenceDTO(
                 bookRef.getId(),
-                bookRef.getCourse().getCourse_id(),
+                bookRef.getCourse().getId(),
                 bookRef.getCourse().getCourse_name(),
                 bookRef.getBook().getId(),
                 bookRef.getBook().getTitle(),
@@ -26,7 +26,7 @@ public class BookReferenceMapper {
     public static BookReference mapToBookRef(BookReferenceDTO bookRefDTO) {
         Course course = new Course();
         Books book = new Books();
-        course.setCourse_id(bookRefDTO.getCourse_id());
+        course.setId(bookRefDTO.getCourse_id());
         book.setId(bookRefDTO.getBook_id());
         return new BookReference(
                 bookRefDTO.getId(),
