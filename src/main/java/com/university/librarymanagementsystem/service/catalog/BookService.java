@@ -15,7 +15,7 @@ public interface BookService {
 
     List<BookDTO> fetchAllBooks();
 
-    List<BookDTO> fetchNewlyAcquiredBooks();
+    List<BookDTO> fetchAllNewlyAcquiredBooks();
 
     List<BookDTO> fetchBooksByAuthor(String authorName);
 
