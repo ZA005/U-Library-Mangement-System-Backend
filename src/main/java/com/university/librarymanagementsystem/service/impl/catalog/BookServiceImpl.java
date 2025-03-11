@@ -89,6 +89,14 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    public List<BookDTO> fetchAllNewlyAcquiredBooks() {
+        List<Books> books = bookRepository.findAllNewlyAcquiredBooks();
+        return filterActiveBooks(books).stream()
+                .map(BookMapper::mapToBookDTO)
+                .toList();
+    }
+
+    @Override
     public List<BookDTO> fetchBooksByAuthor(String authorName) {
         List<Books> books = bookRepository.findBooksByAuthorName(authorName);
         return filterActiveBooks(books).stream().map(BookMapper::mapToBookDTO).toList();

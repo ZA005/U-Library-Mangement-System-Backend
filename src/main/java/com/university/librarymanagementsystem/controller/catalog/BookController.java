@@ -135,6 +135,23 @@ public class BookController {
         }
     }
 
+    @GetMapping("/adminuser/book/fetchAllNewlyAcquired")
+    public ResponseEntity<List<BookDTO>> fetchAllNewlyAcquiredBooks() {
+        try {
+            List<BookDTO> books = bookService.fetchAllNewlyAcquiredBooks();
+
+            if (books == null || books.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 404 Not Found if no books exist
+            }
+
+            // Return the list with 200 OK status
+            return new ResponseEntity<>(books, HttpStatus.OK);
+        } catch (Exception e) {
+            System.err.println("Error fetching all books: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR); // 500 Internal Server Error
+        }
+    }
+
     @GetMapping("/adminuser/book/fetchByAuthor")
     public ResponseEntity<List<BookDTO>> fetchBooksByAuthor(@RequestParam String authorName) {
         try {
