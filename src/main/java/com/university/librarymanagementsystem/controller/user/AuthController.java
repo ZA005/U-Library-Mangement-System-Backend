@@ -25,19 +25,19 @@ public class AuthController {
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatusCode()));
     }
 
-    @PostMapping("auth/login")
+    @PostMapping("/auth/login")
     public ResponseEntity<RequestResponse> login(@RequestBody RequestResponse accountInformation) {
         RequestResponse response = auth.login(accountInformation);
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatusCode()));
     }
 
-    @PostMapping("auth/refresh-token")
+    @PostMapping("/auth/refresh-token")
     public ResponseEntity<RequestResponse> refreshToken(@RequestBody RequestResponse token) {
         RequestResponse response = auth.refreshToken(token);
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatusCode()));
     }
 
-    @GetMapping("auth/verify/{user_id}")
+    @GetMapping("/auth/verify/{user_id}")
     public ResponseEntity<RequestResponse> isActivated(@PathVariable String user_id) {
         RequestResponse response = auth.isActivated(user_id);
         return ResponseEntity.status(response.getStatusCode()).body(response);

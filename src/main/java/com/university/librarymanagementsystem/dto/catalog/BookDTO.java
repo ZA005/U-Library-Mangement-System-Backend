@@ -28,9 +28,9 @@ public class BookDTO {
     private String edition;
     private String series;
     private String language;
-    private LocalDate publishedDate;
+    private String publishedDate;
     private String publisher;
-    private LocalDate copyRight;
+    private String copyRight;
     private String printType;
     private String format;
     private BookStatus status;

@@ -2,10 +2,13 @@ package com.university.librarymanagementsystem.service.impl.catalog;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -84,8 +87,31 @@ public class BookServiceImpl implements BookService {
         List<Books> books = bookRepository.findAll();
 
         return filterActiveBooks(books).stream()
-                .map(BookMapper::mapToBookDTO)
-                .toList();
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toMap(
+                                Books::getIsbn13,
+                                BookMapper::mapToBookDTO,
+                                (dto1, dto2) -> dto1,
+                                LinkedHashMap::new),
+                        map -> new ArrayList<>(map.values())));
+
+    }
+
+    @Override
+    public List<BookDTO> fetchNewlyAcquiredBooks() {
+        List<Books> newlyAcquiredBooks = bookRepository.findAll();
+
+        Collections.reverse(newlyAcquiredBooks);
+
+        return filterActiveBooks(newlyAcquiredBooks).stream()
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toMap(
+                                Books::getIsbn13,
+                                BookMapper::mapToBookDTO,
+                                (dto1, dto2) -> dto1,
+                                LinkedHashMap::new),
+                        map -> new ArrayList<>(map.values())));
+
     }
 
     @Override
@@ -414,4 +440,5 @@ public class BookServiceImpl implements BookService {
         }
         return "";
     }
+
 }

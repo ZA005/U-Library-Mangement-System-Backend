@@ -1,5 +1,7 @@
 package com.university.librarymanagementsystem.mapper.catalog;
 
+import java.time.LocalDate;
+
 import org.springframework.stereotype.Component;
 
 import com.university.librarymanagementsystem.dto.catalog.BarcodeRequestDTO;
@@ -25,9 +27,9 @@ public class BookMapper {
                 book.getEdition(),
                 book.getSeries(),
                 book.getLanguage(),
-                book.getPublishedDate(),
+                book.getPublishedDate().toString(),
                 book.getPublisher(),
-                book.getCopyRight(),
+                book.getCopyRight().toString(),
                 book.getPrintType(),
                 book.getFormat(),
                 book.getStatus(),
@@ -47,9 +49,9 @@ public class BookMapper {
         book.setEdition(bookDTO.getEdition());
         book.setSeries(bookDTO.getSeries());
         book.setLanguage(bookDTO.getLanguage());
-        book.setPublishedDate(bookDTO.getPublishedDate());
+        book.setPublishedDate(LocalDate.parse(bookDTO.getPublishedDate()));
         book.setPublisher(bookDTO.getPublisher());
-        book.setCopyRight(bookDTO.getCopyRight());
+        book.setCopyRight(LocalDate.parse(bookDTO.getCopyRight()));
         book.setPrintType(bookDTO.getPrintType());
         book.setFormat(bookDTO.getFormat());
         book.setStatus(bookDTO.getStatus());
