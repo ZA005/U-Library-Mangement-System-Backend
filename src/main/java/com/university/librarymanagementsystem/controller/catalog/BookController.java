@@ -138,7 +138,7 @@ public class BookController {
     @GetMapping("/adminuser/book/fetchAllNewlyAcquired")
     public ResponseEntity<List<BookDTO>> fetchAllNewlyAcquiredBooks() {
         try {
-            List<BookDTO> books = bookService.fetchAllNewlyAcquiredBooks();
+            List<BookDTO> books = bookService.fetchNewlyAcquiredBooks();
 
             if (books == null || books.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 404 Not Found if no books exist
