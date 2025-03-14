@@ -1,29 +1,28 @@
 package com.university.librarymanagementsystem.mapper.catalog;
 
+import org.springframework.stereotype.Component;
+
 import com.university.librarymanagementsystem.dto.catalog.SectionDTO;
-import com.university.librarymanagementsystem.entity.catalog.Location;
 import com.university.librarymanagementsystem.entity.catalog.Section;
 
+@Component
 public class SectionMapper {
 
-    public static SectionDTO mapToDto(Section section) {
+    public static SectionDTO mapToSectionDTO(Section section) {
         return new SectionDTO(
                 section.getId(),
-                section.getLocation().getId(),
-                section.getSectionName());
+                section.getSectionName(),
+                section.getStatus(),
+                LocationMapper.mapToLocationDTO(section.getLocation()));
     }
 
-    public static Section mapToEntity(SectionDTO sectionDTO) {
-        Section sec = new Section();
-        sec.setId(sectionDTO.getId());
+    public static Section mapToSectionEntity(SectionDTO sectionDTO) {
+        Section section = new Section();
+        section.setId(sectionDTO.getId());
+        section.setSectionName(sectionDTO.getSectionName());
+        section.setStatus(sectionDTO.getStatus());
+        section.setLocation(LocationMapper.mapToLocationEntity(sectionDTO.getLocation()));
+        return section;
 
-        // Initialize location before setting ID
-        Location location = new Location();
-        location.setId(sectionDTO.getLocationId());
-        sec.setLocation(location);
-
-        sec.setSectionName(sectionDTO.getSectionName());
-        return sec;
     }
-
 }

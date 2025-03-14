@@ -2,7 +2,7 @@ package com.university.librarymanagementsystem.service.curriculum;
 
 import java.util.List;
 
-import com.university.librarymanagementsystem.dto.catalog.BookDto;
+import com.university.librarymanagementsystem.dto.catalog.BookDTO;
 import com.university.librarymanagementsystem.dto.curriculum.BookReferenceDTO;
 
 public interface BookReferenceService {
@@ -14,9 +14,9 @@ public interface BookReferenceService {
 
     List<BookReferenceDTO> getAllBookRefByCourse(Integer courseId);
 
-    List<BookDto> getAllUniqueBooks();
+    List<BookDTO> getAllUniqueBooks();
 
-    List<BookDto> getAllBooksNotReferenced(Integer courseId);
+    List<BookDTO> getAllBooksNotReferenced(Integer courseId);
 
     void removeBookRef(Integer bookRefId);
 }

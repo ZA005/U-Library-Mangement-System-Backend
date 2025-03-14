@@ -2,28 +2,31 @@ package com.university.librarymanagementsystem.service.catalog;
 
 import java.util.List;
 
-import com.university.librarymanagementsystem.dto.catalog.AccessionDTO;
-import com.university.librarymanagementsystem.dto.catalog.BookDto;
+import com.university.librarymanagementsystem.dto.catalog.BarcodeRequestDTO;
+import com.university.librarymanagementsystem.dto.catalog.BookDTO;
 import com.university.librarymanagementsystem.dto.catalog.WeedInfoDTO;
-import com.university.librarymanagementsystem.dto.circulation.BookLoanDetailsDTO;
+import com.university.librarymanagementsystem.entity.catalog.book.Books;
 
 public interface BookService {
 
-    List<BookDto> getAllBooks();
+    List<Books> saveBook(BookDTO bookDTO);
 
-    List<BookDto> getBooksByAuthorName(String authorName);
+    String fetchLatestBaseAccession(String isbn13, String locationCodeName);
 
-    String getLastAccessionNumber(String locationPrefix);
+    List<BookDTO> fetchAllBooks();
 
-    BookLoanDetailsDTO getBookByAccessionNo(String accessionNo);
+    List<BookDTO> fetchNewlyAcquiredBooks();
 
-    String getLatestAccessionNo(String title, String isbn10, String isbn13, String locationPrefix);
+    List<BookDTO> fetchBooksByAuthor(String authorName);
 
-    String fetchLastAccessionNumber();
+    List<BarcodeRequestDTO> fetchAllAccessionNumberWithSection();
+
+    List<BookDTO> fetchBookByIsbn13(String isbn13);
 
     void weedBook(WeedInfoDTO weedInfoDTO);
 
-    List<AccessionDTO> getAllAccessionNumbers();
+    String generateCallNumber(String category, List<String> authors,
+            String publishedDate, String title);
 
     List<BookDto> getBooksByIsbn13(String isbn13);
 

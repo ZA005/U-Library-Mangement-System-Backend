@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import com.university.librarymanagementsystem.dto.curriculum.DepartmentDTO;
 import com.university.librarymanagementsystem.entity.curriculum.Department;
-import com.university.librarymanagementsystem.exception.DuplicateEntryException;
 import com.university.librarymanagementsystem.exception.ResourceNotFoundException;
 import com.university.librarymanagementsystem.mapper.curriculum.DepartmentMapper;
 import com.university.librarymanagementsystem.repository.curriculum.DepartmentRepository;

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import com.university.librarymanagementsystem.dto.curriculum.CourseDTO;
 import com.university.librarymanagementsystem.entity.curriculum.Course;
 import com.university.librarymanagementsystem.entity.curriculum.Curriculum;
-import com.university.librarymanagementsystem.exception.DuplicateEntryException;
 import com.university.librarymanagementsystem.exception.ResourceNotFoundException;
 import com.university.librarymanagementsystem.mapper.curriculum.CourseMapper;
 import com.university.librarymanagementsystem.repository.curriculum.CurriculumRepository;
@@ -49,7 +48,7 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public List<CourseDTO> uploadCourses(List<CourseDTO> coursesDTO) {
         coursesDTO.forEach(dto -> {
-            System.out.println("COURSE ID: " + dto.getCourse_id());
+            System.out.println("COURSE ID: " + dto.getId());
         });
 
         List<Course> courses = coursesDTO.stream().map(courseDTO -> {
@@ -68,7 +67,7 @@ public class CourseServiceImpl implements CourseService {
         List<Course> courseToSave = new ArrayList<>();
 
         for (Course course : courses) {
-            Course existingCourse = courseRepository.findById(course.getCourse_id()).orElse(null);
+            Course existingCourse = courseRepository.findById(course.getId()).orElse(null);
 
             if (existingCourse != null) {
                 // Skip if the course code, name, and year level are the same

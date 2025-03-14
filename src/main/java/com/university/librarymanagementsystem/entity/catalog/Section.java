@@ -32,4 +32,6 @@ public class Section {
     private Location location;
 
     private String sectionName;
+
+    private byte status;
 }

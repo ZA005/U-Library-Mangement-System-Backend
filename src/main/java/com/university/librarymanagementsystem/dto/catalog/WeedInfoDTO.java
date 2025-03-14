@@ -18,14 +18,14 @@ import lombok.Setter;
 public class WeedInfoDTO {
 
     // BookWeedingStatus
-    private Long id;
+    private int id;
     private String bookWeedingStatusNotes;
     private LocalDate reviewDate;
     private WeedStatus weedStatus;
 
     // for book
-    private Long bookId;
-    private String accessionNo;
+    private int bookId;
+    private String accessionNumber;
     private String callNumber;
     private String bookTitle;
     private List<String> authors;
@@ -34,9 +34,9 @@ public class WeedInfoDTO {
     private String weedingCriteriaDdc;
 
     // BookWeeding the process
-    private Long weedProcessId;
-    private LocalDate processStartDate;
-    private LocalDate processEndDate;
+    private int weedProcessId;
+    private String processStartDate;
+    private String processEndDate;
     private String processInitiator;
     private String processNotes;
     private ProcessStatus processStatus;

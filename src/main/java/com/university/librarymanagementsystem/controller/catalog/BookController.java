@@ -1,122 +1,200 @@
 package com.university.librarymanagementsystem.controller.catalog;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.university.librarymanagementsystem.dto.catalog.AccessionDTO;
-import com.university.librarymanagementsystem.dto.catalog.BookDto;
-import com.university.librarymanagementsystem.dto.catalog.BookSearchRequest;
-import com.university.librarymanagementsystem.dto.circulation.BookLoanDetailsDTO;
-import com.university.librarymanagementsystem.dto.circulation.BookLoanDetails;
-import com.university.librarymanagementsystem.entity.catalog.Book;
-import com.university.librarymanagementsystem.exception.ResourceNotFoundException;
+import com.university.librarymanagementsystem.dto.catalog.BarcodeRequestDTO;
+import com.university.librarymanagementsystem.dto.catalog.BookDTO;
+import com.university.librarymanagementsystem.dto.catalog.BookSearchRequestDTO;
+import com.university.librarymanagementsystem.dto.catalog.CallNumberRequestDTO;
+import com.university.librarymanagementsystem.entity.catalog.book.Books;
+import com.university.librarymanagementsystem.enums.BookStatus;
 import com.university.librarymanagementsystem.mapper.catalog.BookMapper;
 import com.university.librarymanagementsystem.repository.catalog.BookRepository;
 import com.university.librarymanagementsystem.service.catalog.BookService;
-
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
-@RequestMapping("/adminuser")
 public class BookController {
 
-    @Autowired
     private BookService bookService;
-    @Autowired
     private BookRepository bookRepository;
 
-    @GetMapping("/all-books")
-    public ResponseEntity<List<BookDto>> getAllBooks() {
-        return ResponseEntity.ok(bookService.getAllBooks());
+    public BookController(BookService bookService, BookRepository bookRepository) {
+        this.bookService = bookService;
+        this.bookRepository = bookRepository;
     }
 
-    @GetMapping("/books-by-author")
-    public ResponseEntity<List<BookDto>> getBooksByAuthor(@RequestParam String authorName) {
-        return ResponseEntity.ok(bookService.getBooksByAuthorName(authorName));
-    }
-
-    @GetMapping("/last-accession-number")
-    public ResponseEntity<String> getLastAccessionNumber(@RequestParam String locationPrefix) {
+    @PostMapping("/admin/book/save")
+    public ResponseEntity<?> saveBook(@RequestBody BookDTO bookDTO) {
         try {
-            String lastAccessionNumber = bookService.getLastAccessionNumber(locationPrefix);
-            return ResponseEntity.ok(lastAccessionNumber);
+            // Validate input DTO
+            if (bookDTO == null) {
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("success", "false");
+                errorResponse.put("message", "BookCatalogDTO cannot be null");
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            }
+            List<Books> savedBooks = bookService.saveBook(bookDTO);
+
+            List<BookDTO> responseDTOs = savedBooks.stream()
+                    .map(BookMapper::mapToBookDTO)
+                    .toList();
+            return new ResponseEntity<>(responseDTOs, HttpStatus.CREATED);
+
+        } catch (IllegalArgumentException e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("success", "false");
+            errorResponse.put("message", e.getMessage());
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Error fetching last accession number");
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("success", "false");
+            errorResponse.put("message", "Error saving book: " + e.getMessage());
+            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @GetMapping("/latest-accession")
-    public ResponseEntity<String> getLatestAccession(
-            @RequestParam String title,
-            @RequestParam String isbn10,
-            @RequestParam String isbn13,
-            @RequestParam String locationPrefix) {
+    @GetMapping("/admin/book/fetchLatestBaseAccession")
+    public ResponseEntity<String> fetchLatestBaseAccession(@RequestParam String isbn13,
+            @RequestParam String locationCodeName) {
         try {
-            // Fetch the latest accession number using the service
-            String accessionNo = bookService.getLatestAccessionNo(title, isbn10, isbn13, locationPrefix);
-
-            if ("NOTFOUND".equals(accessionNo)) {
-                // Return 404 if no book matches the query
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOTFOUND");
+            String baseAccession = bookService.fetchLatestBaseAccession(isbn13, locationCodeName);
+            if (baseAccession == null) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
 
-            return ResponseEntity.ok(accessionNo);
+            return new ResponseEntity<>(baseAccession, HttpStatus.OK);
         } catch (Exception e) {
-            // Return 500 if an error occurs
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error occurred while fetching the latest accession number.");
+            System.err.println("Error fetching Base Accession: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @GetMapping("/accessionNo/{accessionNo}")
-    public ResponseEntity<BookLoanDetailsDTO> getBookByAccessionNo(@PathVariable String accessionNo) {
+    @GetMapping("/admin/book/fetchAllAccessionNumber")
+    public ResponseEntity<List<BarcodeRequestDTO>> fetchAllAccessionNumberWithSection() {
         try {
-            BookLoanDetailsDTO book = bookService.getBookByAccessionNo(accessionNo);
-            return ResponseEntity.ok(book);
-        } catch (ResourceNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-    }
-
-    @PostMapping("/advance-search")
-    public List<BookDto> advancedSearchBooks(@RequestBody BookSearchRequest request) {
-        List<Book> books = bookRepository.advancedSearchBooks(request);
-        return books.stream()
-                .filter(book -> !book.getStatus().equals("WEEDED") && !book.getStatus().equals("ARCHIVED"))
-                .map(BookMapper::toDto).toList();
-    }
-
-    @GetMapping("/last-added-accession")
-    public ResponseEntity<String> getLastAddedBookAccessionNumber() {
-        try {
-            String lastAccessionNumber = bookService.fetchLastAccessionNumber();
-            return ResponseEntity.ok(lastAccessionNumber);
-        } catch (ResourceNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            List<BarcodeRequestDTO> barcodeRequestDTOs = bookService.fetchAllAccessionNumberWithSection();
+            if (barcodeRequestDTOs == null || barcodeRequestDTOs.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+            return new ResponseEntity<>(barcodeRequestDTOs, HttpStatus.OK);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error occurred while fetching the last added book's accession number.");
+            System.err.println("Error fetching all Accession Number and Section: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @GetMapping("/all-accession-number")
-    public ResponseEntity<List<AccessionDTO>> getAllAccessionNumber() {
-        return ResponseEntity.ok(bookService.getAllAccessionNumbers());
+    @GetMapping("/adminuser/book/generateCallNumber")
+    public ResponseEntity<String> generateCallNumber(@RequestBody CallNumberRequestDTO request) {
+        try {
+            if (request.getTitle().isEmpty() && request.getCategory().isBlank()
+                    && request.getAuthors().isEmpty() && request.getPublishedDate() == null) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+
+            String callNumber = bookService.generateCallNumber(
+                    request.getCategory(),
+                    request.getAuthors(),
+                    request.getPublishedDate(),
+                    request.getTitle());
+            if ("Class number not found".equals(callNumber)) {
+                return new ResponseEntity<>(callNumber, HttpStatus.NOT_FOUND);
+            }
+
+            return new ResponseEntity<>(callNumber, HttpStatus.OK);
+        } catch (Exception e) {
+            System.err.println("Error generating Call Number: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    @GetMapping("/isbn13/{isbn13}")
-    public ResponseEntity<List<BookDto>> getBookByISBN13(@PathVariable String isbn13) {
-        return ResponseEntity.ok(bookService.getBooksByIsbn13(isbn13));
+    @GetMapping("/adminuser/book/fetchAll")
+    public ResponseEntity<List<BookDTO>> fetchAllBooks() {
+        try {
+            List<BookDTO> books = bookService.fetchAllBooks();
+
+            if (books == null || books.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 404 Not Found if no books exist
+            }
+
+            // Return the list with 200 OK status
+            return new ResponseEntity<>(books, HttpStatus.OK);
+        } catch (Exception e) {
+            System.err.println("Error fetching all books: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR); // 500 Internal Server Error
+        }
+    }
+
+    @GetMapping("/adminuser/book/fetchAllNewlyAcquired")
+    public ResponseEntity<List<BookDTO>> fetchAllNewlyAcquiredBooks() {
+        try {
+            List<BookDTO> books = bookService.fetchNewlyAcquiredBooks();
+
+            if (books == null || books.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 404 Not Found if no books exist
+            }
+
+            // Return the list with 200 OK status
+            return new ResponseEntity<>(books, HttpStatus.OK);
+        } catch (Exception e) {
+            System.err.println("Error fetching all books: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR); // 500 Internal Server Error
+        }
+    }
+
+    @GetMapping("/adminuser/book/fetchByAuthor")
+    public ResponseEntity<List<BookDTO>> fetchBooksByAuthor(@RequestParam String authorName) {
+        try {
+            if (authorName == null || authorName.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST); // 400 Bad Request if authorName is empty
+            }
+
+            return new ResponseEntity<>(bookService.fetchBooksByAuthor(authorName), HttpStatus.OK);
+        } catch (Exception e) {
+            System.err.println("Error fetching all books by authorName: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/adminuser/book/advanceSearch")
+    public ResponseEntity<List<BookDTO>> advanceSearch(@RequestBody BookSearchRequestDTO request) {
+        if (request == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        try {
+            List<Books> books = bookRepository.advanceSearchBooks(request);
+            List<BookDTO> bookDTO = books.stream().filter(book -> !book.getStatus().equals(BookStatus.WEEDED) &&
+                    !book.getStatus().equals(BookStatus.ARCHIVED))
+                    .map(BookMapper::mapToBookDTO).toList();
+            return new ResponseEntity<>(bookDTO, HttpStatus.OK);
+        } catch (Exception e) {
+            System.err.println("Error fetching all books by authorName: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/adminuser/book/fetchByIsbn/{isbn13}")
+    public ResponseEntity<List<BookDTO>> fetchBooksByISBN13(@PathVariable String isbn13) {
+        if (isbn13 == null || isbn13.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        try {
+            return new ResponseEntity<>(bookService.fetchBookByIsbn13(isbn13), HttpStatus.OK);
+
+        } catch (Exception e) {
+            System.err.println("Error fetching books by isbn13: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }

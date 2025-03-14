@@ -11,7 +11,7 @@ public class CurriculumMapper {
     public static CurriculumDTO mapToCurriculumDTO(Curriculum curr) {
         return new CurriculumDTO(
                 curr.getId(),
-                curr.getProgram().getProgram_id(),
+                curr.getProgram().getId(),
                 curr.getProgram().getCode(),
                 curr.getProgram().getDescription(),
                 curr.getRevision_no(),
@@ -22,9 +22,9 @@ public class CurriculumMapper {
 
     public static Curriculum mapToCurriculum(CurriculumDTO currDTO) {
         Program program = new Program();
-        program.setProgram_id(currDTO.getProgram_id());
+        program.setId(currDTO.getProgram_id());
         return new Curriculum(
-                currDTO.getCurr_id(),
+                currDTO.getId(),
                 program,
                 currDTO.getRevision_no(),
                 currDTO.getEffectivity_sem(),

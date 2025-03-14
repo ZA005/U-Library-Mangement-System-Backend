@@ -12,7 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CourseDTO {
-    private int course_id;
+    private int id;
 
     @JsonProperty("curr_id")
     private String curr_id;

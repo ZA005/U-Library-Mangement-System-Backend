@@ -9,17 +9,9 @@ public interface CourseService {
 
     List<CourseDTO> uploadCourses(List<CourseDTO> courseDTO);
 
-    // List<CourseDTO> addSubjects(List<CourseDTO> subjectDTOs);
-
-    // CourseDTO getSubjectByID(Integer subjectID);
-
     List<CourseDTO> getAllCourses();
 
     List<CourseDTO> getAllCourseByProgram(Integer programId);
 
     List<CourseDTO> getAllCourseByRevision(Integer revisionNo);
-
-    // List<CourseDTO> getAllSubjectsByProgram(Integer programId);
-
-    // CourseDTO updateSubject(Integer subjectID, CourseDTO updateSubject);
 }

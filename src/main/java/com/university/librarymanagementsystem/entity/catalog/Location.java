@@ -1,7 +1,5 @@
 package com.university.librarymanagementsystem.entity.catalog;
 
-import javax.swing.text.StyledEditorKit.BoldAction;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -19,16 +17,19 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "location")
+@Table(name = "book_locations")
 @Data
 public class Location {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    @Column(name = "location_code", length = 3)
-    private String locationCodeName;
-    private String locationName;
-    private Boolean status;
 
+    @Column(name = "location_code", length = 5)
+    private String codeName;
+
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    @Column(name = "status", nullable = false)
+    private byte status;
 }

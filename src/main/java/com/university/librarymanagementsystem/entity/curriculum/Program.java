@@ -2,8 +2,6 @@ package com.university.librarymanagementsystem.entity.curriculum;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -24,8 +22,8 @@ import lombok.Setter;
 public class Program {
 
     @Id
-    // @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int program_id;
+    @Column(name = "program_id", nullable = false)
+    private int id;
 
     @ManyToOne
     @JoinColumn(name = "dept_id", nullable = false)

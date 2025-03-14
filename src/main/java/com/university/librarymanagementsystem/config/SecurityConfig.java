@@ -18,7 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.university.librarymanagementsystem.service.impl.user.MyUserDetailsService;
+import com.university.librarymanagementsystem.service.impl.user.AuthenticationImpl;
 
 @Order(1)
 @Configuration
@@ -26,7 +26,7 @@ import com.university.librarymanagementsystem.service.impl.user.MyUserDetailsSer
 public class SecurityConfig {
 
     @Autowired
-    private MyUserDetailsService ourUserDetailsService;
+    private AuthenticationImpl authService;
     @Autowired
     private JWTAuthFilter jwtAuthFilter;
 
@@ -53,7 +53,7 @@ public class SecurityConfig {
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setUserDetailsService(ourUserDetailsService);
+        daoAuthenticationProvider.setUserDetailsService(authService);
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
         return daoAuthenticationProvider;
     }

@@ -1,31 +1,34 @@
 package com.university.librarymanagementsystem.mapper.catalog;
 
+import org.springframework.stereotype.Component;
+
 import com.university.librarymanagementsystem.dto.catalog.WeedingCriteriaDTO;
 import com.university.librarymanagementsystem.entity.catalog.WeedingCriteria;
 
+@Component
 public class WeedingCriteriaMapper {
 
-    public static WeedingCriteriaDTO mapToWeedingCriteriaDto(WeedingCriteria weedingCriteria) {
+    public static WeedingCriteriaDTO mapToWeedingCriteriaDTO(WeedingCriteria wc) {
         return new WeedingCriteriaDTO(
-                weedingCriteria.getId(),
-                weedingCriteria.getDdc(),
-                weedingCriteria.getMinYearsOld(),
-                weedingCriteria.getConditionThreshold(),
-                weedingCriteria.getUsageThreshold(),
-                weedingCriteria.getLanguage(),
-                weedingCriteria.getDuplicationCheck(),
-                weedingCriteria.getCriteriaStatus());
+                wc.getId(),
+                wc.getDdcCategory(),
+                wc.getYearsBeforeWeeding(),
+                wc.getConditionThreshold(),
+                wc.getUsageThreshold(),
+                wc.getLanguage(),
+                wc.getDuplicationCheck(),
+                wc.getCriteriaStatus());
     }
 
-    public static WeedingCriteria mapToWeedingCriteriaEntity(WeedingCriteriaDTO weedingCriteriaDTO) {
+    public static WeedingCriteria mapToWeedingCriteriaEntity(WeedingCriteriaDTO wcDTO) {
         return new WeedingCriteria(
-                weedingCriteriaDTO.getId(),
-                weedingCriteriaDTO.getDdc(),
-                weedingCriteriaDTO.getMinYearsOld(),
-                weedingCriteriaDTO.getConditionThreshold(),
-                weedingCriteriaDTO.getUsageThreshold(),
-                weedingCriteriaDTO.getLanguage(),
-                weedingCriteriaDTO.getDuplicationCheck(),
-                weedingCriteriaDTO.getCriteriaStatus());
+                wcDTO.getId(),
+                wcDTO.getDdcCategory(),
+                wcDTO.getYearsBeforeWeeding(),
+                wcDTO.getConditionThreshold(),
+                wcDTO.getUsageThreshold(),
+                wcDTO.getLanguage(),
+                wcDTO.getDuplicationCheck(),
+                wcDTO.getCriteriaStatus());
     }
 }

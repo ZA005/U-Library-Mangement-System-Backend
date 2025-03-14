@@ -12,12 +12,11 @@ import lombok.Setter;
 public class WeedingCriteriaDTO {
 
     private int id;
-    private String ddc;
-    private Integer minYearsOld;
+    private String ddcCategory;
+    private Integer yearsBeforeWeeding;
     private String conditionThreshold;
     private Integer usageThreshold;
     private String language;
     private Boolean duplicationCheck;
     private Boolean criteriaStatus;
-
 }

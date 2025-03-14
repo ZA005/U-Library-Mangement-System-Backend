@@ -1,79 +1,64 @@
 package com.university.librarymanagementsystem.controller.catalog;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.http.HttpStatus;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.university.librarymanagementsystem.dto.catalog.CallNumberReq;
-import com.university.librarymanagementsystem.dto.catalog.GoogleBooksDto;
-import com.university.librarymanagementsystem.entity.catalog.Book;
-import com.university.librarymanagementsystem.service.catalog.GoogleBooksService;
-import com.university.librarymanagementsystem.service.catalog.MetadataService;
+import com.university.librarymanagementsystem.service.catalog.GoogleBookService;
 
 import lombok.AllArgsConstructor;
 
-@CrossOrigin("*")
 @AllArgsConstructor
 @RestController
 @RequestMapping("/sru")
 public class GoogleBooksController {
 
-    @Autowired
-    private GoogleBooksService googleBooksService;
-
-    @Autowired
-    private MetadataService metadataService;
+    private GoogleBookService googleBookService;
 
     @GetMapping("/googlebooks/search")
-    public ResponseEntity<String> searchBooks(
+    public ResponseEntity<?> searchBooks(
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "author", required = false) String author,
             @RequestParam(value = "publisher", required = false) String publisher,
             @RequestParam(value = "isbn", required = false) String isbn,
             @RequestParam(value = "lccn", required = false) String lccn) {
+        try {
+            if (keyword == null && title == null && author == null &&
+                    publisher == null && isbn == null && lccn == null) {
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("success", "false");
+                errorResponse.put("message", "At least one search parameter is required");
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            }
 
-        String query = googleBooksService.buildQuery(keyword, title, author,
-                publisher, isbn, lccn);
-        String response = googleBooksService.searchBooks(query);
-        return ResponseEntity.ok(response);
-    }
+            // Build the query using the service
+            String query = googleBookService.buildQuery(keyword, title, author, publisher, isbn, lccn);
 
-    @GetMapping("/loc/search")
-    public List<Map<String, String>> getMetadata(@RequestParam String query) {
-        return metadataService.retrieveMetadata(query);
-    }
+            // Perform the search
+            String response = googleBookService.searchBooks(query);
 
-    @PostMapping("/save")
-    public ResponseEntity<Book> saveBook(@RequestBody GoogleBooksDto bookDto) {
-        googleBooksService.saveBook(bookDto);
-        return ResponseEntity.ok().build();
-    }
+            // Check if the response is empty or null
+            if (response == null || response.isEmpty()) {
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("success", "false");
+                errorResponse.put("message", "No books found for the given query");
+                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            }
 
-    @PostMapping("/generate-call-number")
-    public ResponseEntity<String> generateCallNumber(@RequestBody CallNumberReq request) {
-        // Generate the call number using the service
-        String callNumber = googleBooksService.generateCallNumber(
-                request.getCategory(),
-                request.getAuthors(),
-                request.getPublishedDate(),
-                request.getTitle());
-
-        if ("Class number not found".equals(callNumber)) {
-            return ResponseEntity.status(404).body(callNumber); // Return 404 if the class number is missing
+            // Return the response with 200 OK status
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("success", "false");
+            errorResponse.put("message", "An error occurred while searching books");
+            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return ResponseEntity.ok(callNumber); // Return the generated call number
     }
-
 }
