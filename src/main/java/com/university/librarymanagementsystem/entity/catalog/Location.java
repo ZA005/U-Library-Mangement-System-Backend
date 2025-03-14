@@ -31,5 +31,5 @@ public class Location {
     private String name;
 
     @Column(name = "status", nullable = false)
-    private byte status;
+    private Boolean status;
 }
