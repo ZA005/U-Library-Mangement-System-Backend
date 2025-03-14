@@ -7,6 +7,5 @@ import com.university.librarymanagementsystem.entity.catalog.Location;
 
 @Repository
 public interface LocationRepository extends JpaRepository<Location, Integer> {
-    Location findByLocationName(String locationName);
 
 }

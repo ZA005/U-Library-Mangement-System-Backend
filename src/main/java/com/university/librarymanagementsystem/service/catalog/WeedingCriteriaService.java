@@ -10,10 +10,9 @@ public interface WeedingCriteriaService {
 
     WeedingCriteriaDTO updateWeedingCriteria(WeedingCriteriaDTO weedingCriteriaDTO);
 
-    void deleteWeedingCriteria(Integer id);
+    boolean deleteCriteria(int id);
 
-    List<WeedingCriteriaDTO> getAllWeedingCriteria();
+    List<WeedingCriteriaDTO> fetchAllWeedingCriteria();
 
-    WeedingCriteriaDTO getWeedingCriteriaById(Integer id);
-
+    WeedingCriteriaDTO fetchWeedingCriteriaById(int id);
 }

@@ -13,8 +13,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "weeding_criteria")
 public class WeedingCriteria {
@@ -23,20 +23,20 @@ public class WeedingCriteria {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "ddc", length = 3)
-    private String ddc; // Dewey Decimal Classification
+    @Column(name = "ddc_category", length = 3, nullable = false)
+    private String ddcCategory;
 
-    @Column(name = "min_years_old")
-    private Integer minYearsOld; // Minimum number of years old for weeding consideration
+    @Column(name = "years_before_weeding")
+    private int yearsBeforeWeeding;
 
     @Column(name = "condition_threshold", length = 20)
-    private String conditionThreshold; // e.g., 'poor', 'fair' for physical condition
+    private String conditionThreshold;
 
     @Column(name = "usage_threshold")
-    private Integer usageThreshold; // Number of times borrowed in the last 'n' years
+    private Integer usageThreshold;
 
     @Column(name = "language", length = 50)
-    private String language; // Language criteria for weeding
+    private String language;
 
     @Column(name = "duplication_check")
     private Boolean duplicationCheck = true;

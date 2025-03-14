@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import com.university.librarymanagementsystem.dto.curriculum.ProgramDTO;
 import com.university.librarymanagementsystem.entity.curriculum.Department;
 import com.university.librarymanagementsystem.entity.curriculum.Program;
-import com.university.librarymanagementsystem.exception.DuplicateEntryException;
 import com.university.librarymanagementsystem.exception.ResourceNotFoundException;
 import com.university.librarymanagementsystem.mapper.curriculum.ProgramMapper;
 import com.university.librarymanagementsystem.repository.curriculum.DepartmentRepository;
@@ -47,7 +46,7 @@ public class ProgramServiceImpl implements ProgramService {
         // dto.setStatus((byte) 1);
         // });
         programDTOs.forEach(dto -> {
-            System.out.println(dto.getProgram_id());
+            System.out.println(dto.getId());
             System.out.println(dto.getDepartment_id());
             System.out.println(dto.getDescription());
             System.out.println(dto.getStatus());
@@ -70,7 +69,7 @@ public class ProgramServiceImpl implements ProgramService {
         List<Program> programsToSave = new ArrayList<>();
 
         for (Program program : programs) {
-            Program existingProgram = programRepository.findById(program.getProgram_id()).orElse(null);
+            Program existingProgram = programRepository.findById(program.getId()).orElse(null);
             System.out.println(existingProgram);
             if (existingProgram != null) {
                 // Skip if the description is the same (handle duplicate gracefully)

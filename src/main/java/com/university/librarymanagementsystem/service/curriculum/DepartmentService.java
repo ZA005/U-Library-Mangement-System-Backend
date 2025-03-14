@@ -17,6 +17,3 @@ public interface DepartmentService {
     DepartmentDTO getDepartmentById(String departmentID);
 
 }
-
-// DepartmentDTO updateDepartment(String departmentID, DepartmentDTO
-// updateDepartment);

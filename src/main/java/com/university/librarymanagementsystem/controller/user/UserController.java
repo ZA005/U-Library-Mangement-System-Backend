@@ -1,52 +1,85 @@
 package com.university.librarymanagementsystem.controller.user;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.university.librarymanagementsystem.dto.user.ReqRes;
-import com.university.librarymanagementsystem.service.user.UserManagementService;
+import com.university.librarymanagementsystem.dto.user.OtpVerificationDTO;
+import com.university.librarymanagementsystem.dto.user.UserDTO;
+import com.university.librarymanagementsystem.service.user.OTPService;
+import com.university.librarymanagementsystem.service.user.UserService;
 
 import lombok.AllArgsConstructor;
 
-@CrossOrigin("*")
 @AllArgsConstructor
 @RestController
+@RequestMapping
 public class UserController {
 
-    @Autowired
-    private UserManagementService usersManagementService;
+    private UserService service;
 
-    @PostMapping("/auth/register")
-    public ResponseEntity<ReqRes> register(@RequestBody ReqRes reg) {
-        ReqRes response = usersManagementService.register(reg);
+    private OTPService otp;
 
-        if (response.getStatusCode() == 200) {
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    @GetMapping("/verify/{id}")
+    public ResponseEntity<UserDTO> sendOTP(@PathVariable("id") String user_id) {
+        try {
+            UserDTO user = service.fetchUserById(user_id);
+            System.out.println("USER:" + user);
+            if (user == null) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 404 if user not found
+            }
+
+            String otpCode = otp.generateOTP();
+            otp.storeOTP(user.getEmailAdd(), otpCode);
+            otp.sendOTPEmail(user.getEmailAdd(), otpCode);
+
+            // Return the user with a 200 OK status
+            return new ResponseEntity<>(user, HttpStatus.OK);
+        } catch (Exception e) {
+            // Return an error response if something goes wrong
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @GetMapping("/verify/activation-status/{schoolId}")
-    public ResponseEntity<Boolean> isActivated(@PathVariable String schoolId) {
-        return ResponseEntity.ok(usersManagementService.isActivated(schoolId));
+    @PostMapping("/verify/otp")
+    public ResponseEntity<Map<String, String>> confirmOTP(@RequestBody OtpVerificationDTO user) {
+        Map<String, String> response = new HashMap<>();
+
+        if (user == null || user.getEmailAdd() == null || user.getOtp() == null) {
+            response.put("success", "false");
+            response.put("message", "Invalid request payload");
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST); // 400 Bad Request
+        }
+
+        boolean isVerified = otp.verifyOTP(user.getEmailAdd(), user.getOtp());
+
+        if (!isVerified) {
+            response.put("success", "false");
+            response.put("message", "Invalid or expired OTP!");
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED); // 401 Unauthorized
+        }
+
+        response.put("success", "true");
+        response.put("message", "OTP verified successfully!");
+        return new ResponseEntity<>(response, HttpStatus.OK); // 200 OK
     }
 
-    @PostMapping("/auth/login")
-    public ResponseEntity<ReqRes> login(@RequestBody ReqRes req) {
-        return ResponseEntity.ok(usersManagementService.login(req));
-    }
+    @GetMapping("/public/user/{id}")
+    public ResponseEntity<UserDTO> fetchUser(@PathVariable("id") String user_id) {
+        UserDTO user = service.fetchUserById(user_id);
 
-    @PostMapping("/auth/refresh")
-    public ResponseEntity<ReqRes> refreshToken(@RequestBody ReqRes req) {
-        return ResponseEntity.ok(usersManagementService.refreshToken(req));
-    }
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
 
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
 }

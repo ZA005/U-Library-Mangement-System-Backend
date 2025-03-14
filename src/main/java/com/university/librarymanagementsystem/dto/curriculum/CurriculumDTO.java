@@ -13,7 +13,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class CurriculumDTO {
 
-    private String curr_id;
+    private String id;
 
     @JsonProperty("program_id")
     private int program_id;

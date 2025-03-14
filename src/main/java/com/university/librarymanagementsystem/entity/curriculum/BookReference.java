@@ -1,8 +1,7 @@
 package com.university.librarymanagementsystem.entity.curriculum;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-// import com.university.librarymanagementsystem.entity.Book;
-import com.university.librarymanagementsystem.entity.catalog.Book;
+import com.university.librarymanagementsystem.entity.catalog.book.Books;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -42,7 +41,7 @@ public class BookReference {
     @JsonIgnore
     @ToString.Exclude
     // @Column(name = "book_id", nullable = false)
-    private Book book;
+    private Books book;
 
     @Column(name = "status", nullable = false)
     private int status;

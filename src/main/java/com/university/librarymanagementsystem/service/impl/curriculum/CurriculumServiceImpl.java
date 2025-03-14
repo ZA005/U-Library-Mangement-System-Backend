@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import com.university.librarymanagementsystem.dto.curriculum.CurriculumDTO;
 import com.university.librarymanagementsystem.entity.curriculum.Curriculum;
 import com.university.librarymanagementsystem.entity.curriculum.Program;
-import com.university.librarymanagementsystem.exception.DuplicateEntryException;
 import com.university.librarymanagementsystem.exception.ResourceNotFoundException;
 import com.university.librarymanagementsystem.mapper.curriculum.CurriculumMapper;
 import com.university.librarymanagementsystem.repository.curriculum.CurriculumRepository;
@@ -33,7 +32,7 @@ public class CurriculumServiceImpl implements CurriculumService {
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Program with ID " + curriculumDTO.getProgram_id() + " not found!"));
 
-            System.out.println("Program ID: " + program.getProgram_id());
+            System.out.println("Program ID: " + program.getId());
             Curriculum curriculum = CurriculumMapper.mapToCurriculum(curriculumDTO);
             curriculum.setProgram(program);
             return curriculum;

@@ -1,66 +1,70 @@
 package com.university.librarymanagementsystem.mapper.catalog;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.time.LocalDate;
 
-import com.university.librarymanagementsystem.dto.catalog.AccessionDTO;
-import com.university.librarymanagementsystem.dto.catalog.BookDto;
-import com.university.librarymanagementsystem.dto.circulation.BookLoanDetailsDTO;
-import com.university.librarymanagementsystem.entity.catalog.Author;
-import com.university.librarymanagementsystem.entity.catalog.Book;
+import org.springframework.stereotype.Component;
 
+import com.university.librarymanagementsystem.dto.catalog.BarcodeRequestDTO;
+import com.university.librarymanagementsystem.dto.catalog.BookDTO;
+import com.university.librarymanagementsystem.entity.catalog.BookCatalog;
+import com.university.librarymanagementsystem.entity.catalog.book.Author;
+import com.university.librarymanagementsystem.entity.catalog.book.Books;
+
+@Component
 public class BookMapper {
 
-    public static BookDto toDto(Book book) {
-        return new BookDto(
+    public static BookDTO mapToBookDTO(Books book) {
+        return new BookDTO(
                 book.getId(),
+                book.getAccessionNumber(),
                 book.getTitle(),
-                book.getAccessionNo(),
-                book.getAuthors().stream().map(Author::getName).collect(Collectors.toList()),
-                book.getPublisher(),
-                book.getPublishedDate(),
-                book.getDescription(),
-                book.getPageCount(),
-                book.getCategories(),
-                book.getLanguage(),
+                book.getAuthors().stream().map(Author::getName).toList(),
                 book.getIsbn10(),
                 book.getIsbn13(),
+                book.getDescription(),
+                book.getPages(),
                 book.getThumbnail(),
+                book.getEdition(),
+                book.getSeries(),
+                book.getLanguage(),
+                book.getPublishedDate().toString(),
+                book.getPublisher(),
+                book.getCopyRight().toString(),
                 book.getPrintType(),
+                book.getFormat(),
                 book.getStatus(),
-                book.getCallNumber(),
-                book.getPurchasePrice(),
-                book.getSection(),
-                book.getDateAcquired(),
-                book.getNotes(),
-                book.getLocation(),
-                book.getVendor(),
-                book.getFundingSource(),
-                book.getSubjects(),
-                book.getCollectionType(),
-                book.getBookCondition());
-
+                book.getCondition(),
+                BookCatalogMapper.mapToBookCatalogDTO(book.getBookCatalog()));
     }
 
-    public static AccessionDTO mapToAccessionDTO(Book book) {
-        AccessionDTO accessionDTO = new AccessionDTO();
-        accessionDTO.setAccessionNo(book.getAccessionNo());
-        accessionDTO.setSection(book.getSection());
-        return accessionDTO;
+    public static Books mapToBook(BookDTO bookDTO, BookCatalog bookCatalog) {
+        Books book = new Books();
+        book.setId(bookDTO.getId());
+        book.setTitle(bookDTO.getTitle());
+        book.setIsbn10(bookDTO.getIsbn10());
+        book.setIsbn13(bookDTO.getIsbn13());
+        book.setDescription(bookDTO.getDescription());
+        book.setPages(bookDTO.getPages());
+        book.setThumbnail(bookDTO.getThumbnail());
+        book.setEdition(bookDTO.getEdition());
+        book.setSeries(bookDTO.getSeries());
+        book.setLanguage(bookDTO.getLanguage());
+        book.setPublishedDate(LocalDate.parse(bookDTO.getPublishedDate()));
+        book.setPublisher(bookDTO.getPublisher());
+        book.setCopyRight(LocalDate.parse(bookDTO.getCopyRight()));
+        book.setPrintType(bookDTO.getPrintType());
+        book.setFormat(bookDTO.getFormat());
+        book.setStatus(bookDTO.getStatus());
+        book.setCondition(bookDTO.getCondition());
+        book.setBookCatalog(bookCatalog);
+
+        return book;
     }
 
-
-    public static BookLoanDetailsDTO mapToBookLoanDetails(Book book) {
-        BookLoanDetailsDTO bookLoanDetails = new BookLoanDetailsDTO();
-        bookLoanDetails.setTitle(book.getTitle());
-      
-        List<String> authorsList = book.getAuthors().stream()
-                .map(Author::getName)
-                .toList();
-
-        bookLoanDetails.setAuthors(authorsList);
-        bookLoanDetails.setCallNumber(book.getCallNumber());
-        bookLoanDetails.setBookStatus(book.getStatus());
-        return bookLoanDetails;
+    public static BarcodeRequestDTO mapToBarcodeRequestDTO(Books book) {
+        return new BarcodeRequestDTO(
+                book.getAccessionNumber(),
+                book.getBookCatalog().getSection().getSectionName());
     }
+
 }

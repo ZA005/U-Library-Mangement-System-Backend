@@ -12,7 +12,8 @@ import lombok.Setter;
 public class LocationDTO {
 
     private int id;
-    private String locationCodeName;
-    private String locationName;
-    private Boolean status;
+    private String codeName;
+    private String name;
+    private byte status;
+
 }

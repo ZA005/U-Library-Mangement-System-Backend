@@ -11,7 +11,7 @@ public class ProgramMapper {
 
     public static ProgramDTO mapToProgramDTO(Program program) {
         return new ProgramDTO(
-                program.getProgram_id(),
+                program.getId(),
                 program.getDepartment().getId(),
                 program.getDepartment().getName(),
                 program.getDepartment().getCode(),
@@ -24,7 +24,7 @@ public class ProgramMapper {
         Department dept = new Department();
         dept.setId(programDTO.getDepartment_id());
         return new Program(
-                programDTO.getProgram_id(),
+                programDTO.getId(),
                 dept,
                 programDTO.getCode(),
                 programDTO.getDescription(),
