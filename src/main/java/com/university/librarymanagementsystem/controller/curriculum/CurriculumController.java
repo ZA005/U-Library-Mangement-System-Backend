@@ -43,4 +43,10 @@ public class CurriculumController {
 
         return ResponseEntity.ok(curriculums);
     }
+
+    @GetMapping("/program/{id}/revisions")
+    public ResponseEntity<List<Integer>> getAllRevisionsByProgram(@PathVariable("id") Integer programId) {
+        List<Integer> revisions = curriculumService.getAllRevisionsByProgram(programId);
+        return ResponseEntity.ok(revisions);
+    }
 }
