@@ -103,6 +103,11 @@ public class CurriculumServiceImpl implements CurriculumService {
         return curriculums.stream().map((curriculum) -> CurriculumMapper.mapToCurriculumDTO(curriculum))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<Integer> getAllRevisionsByProgram(Integer programId) {
+        return currRepo.findRevisionsByProgramId(programId);
+    }
 }
 // currDTO.forEach(dto -> {
 // System.out.println(dto.getCurr_id());

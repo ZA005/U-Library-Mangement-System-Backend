@@ -13,4 +13,6 @@ public interface CurriculumService {
     List<CurriculumDTO> getAllCurriculum();
 
     List<CurriculumDTO> getAllCurriculumByProgram(Integer programId);
+
+    List<Integer> getAllRevisionsByProgram(Integer programId);
 }
