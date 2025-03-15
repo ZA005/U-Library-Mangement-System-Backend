@@ -4,11 +4,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.university.librarymanagementsystem.dto.curriculum.DepartmentDTO;
+import com.university.librarymanagementsystem.entity.curriculum.Department;
+import com.university.librarymanagementsystem.mapper.curriculum.DepartmentMapper;
 import com.university.librarymanagementsystem.service.curriculum.DepartmentService;
 
 import lombok.AllArgsConstructor;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +38,13 @@ public class DepartmentController {
     // ADDING OF DEPARTMENTS VIA UPLOAD
     @PostMapping("/upload")
     public ResponseEntity<List<DepartmentDTO>> uploadDepartments(@RequestBody List<DepartmentDTO> deptDTO) {
+        List<Department> departments = deptDTO.stream()
+                .map(DepartmentMapper::mapToDepartment)
+                .collect(Collectors.toList());
+
+        for (Department department : departments) {
+            System.out.println("Processing Department - ID: " + department.getId() + ", Name: " + department.getName());
+        }
         List<DepartmentDTO> uploadedDepartments = departmentService.uploadDepartments(deptDTO);
 
         return new ResponseEntity<>(uploadedDepartments, HttpStatus.CREATED);
