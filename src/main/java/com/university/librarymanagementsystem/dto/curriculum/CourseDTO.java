@@ -12,6 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CourseDTO {
+    @JsonProperty("course_id")
     private int id;
 
     @JsonProperty("curr_id")

@@ -38,6 +38,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         List<Department> departmentsToSave = new ArrayList<>();
 
         for (Department department : departments) {
+            System.out.println("Processing Department - ID: " + department.getId() + ", Name: " + department.getName());
             // Check if department ID exists
             Department existingDepartment = departmentRepository.findById(department.getId()).orElse(null);
 
