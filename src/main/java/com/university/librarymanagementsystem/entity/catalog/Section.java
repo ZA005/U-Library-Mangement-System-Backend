@@ -33,5 +33,5 @@ public class Section {
 
     private String sectionName;
 
-    private byte status;
+    private Boolean status;
 }

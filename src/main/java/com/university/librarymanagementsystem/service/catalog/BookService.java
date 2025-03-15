@@ -28,6 +28,4 @@ public interface BookService {
     String generateCallNumber(String category, List<String> authors,
             String publishedDate, String title);
 
-    List<BookDto> getBooksByIsbn13(String isbn13);
-
 }
