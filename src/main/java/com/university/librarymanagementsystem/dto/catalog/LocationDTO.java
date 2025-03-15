@@ -14,6 +14,6 @@ public class LocationDTO {
     private int id;
     private String codeName;
     private String name;
-    private byte status;
+    private Boolean status;
 
 }

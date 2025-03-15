@@ -143,7 +143,6 @@ public class BookController {
             if (books == null || books.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 404 Not Found if no books exist
             }
-
             // Return the list with 200 OK status
             return new ResponseEntity<>(books, HttpStatus.OK);
         } catch (Exception e) {
