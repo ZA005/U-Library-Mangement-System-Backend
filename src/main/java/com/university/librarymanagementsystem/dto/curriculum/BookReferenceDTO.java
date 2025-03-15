@@ -24,8 +24,8 @@ public class BookReferenceDTO {
     private String book_name;
     private String isbn10;
     private String isbn13;
+    private String copyright;
     private String language;
     private String location;
-
     private int status;
 }
