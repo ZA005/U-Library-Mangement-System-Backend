@@ -93,11 +93,12 @@ public class SectionController {
         }
     }
 
-    @PutMapping("/{id}/status")
-    public ResponseEntity<Section> updateSectionStatus(@PathVariable int id, @RequestParam boolean status) {
+    @PutMapping("/{sectionId}/status")
+    public ResponseEntity<Section> updateSectionStatus(@PathVariable int sectionId,
+            @RequestParam boolean status) {
 
         try {
-            Section updatedSection = sectionService.updateSectionStatus(id, status);
+            Section updatedSection = sectionService.updateSectionStatus(sectionId, status);
             if (updatedSection == null) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
