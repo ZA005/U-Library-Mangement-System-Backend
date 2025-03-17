@@ -26,6 +26,5 @@ public class BookReferenceDTO {
     private String isbn13;
     private String copyright;
     private String language;
-    private String location;
     private int status;
 }

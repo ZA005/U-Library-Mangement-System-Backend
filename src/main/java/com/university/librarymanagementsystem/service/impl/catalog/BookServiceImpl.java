@@ -64,6 +64,18 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    public BookDTO fetchBookByID(int book_id) {
+        // Fetch the book from the repository
+        Books book = bookRepository.findById(book_id)
+                .orElseThrow(() -> new ResourceNotFoundException("Book not found with id " + book_id));
+
+        // Use the BookMapper to convert the Book entity to a BookDTO
+        BookDTO bookDTO = BookMapper.mapToBookDTO(book);
+
+        return bookDTO;
+    }
+
+    @Override
     public List<Books> saveBook(BookDTO bookDTO) {
         validateBookDTO(bookDTO);
 
@@ -440,5 +452,4 @@ public class BookServiceImpl implements BookService {
         }
         return "";
     }
-
 }
