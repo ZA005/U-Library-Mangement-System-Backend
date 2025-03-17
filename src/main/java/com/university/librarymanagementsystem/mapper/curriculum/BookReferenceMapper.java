@@ -18,9 +18,8 @@ public class BookReferenceMapper {
                 bookRef.getBook().getTitle(),
                 bookRef.getBook().getIsbn10(),
                 bookRef.getBook().getIsbn13(),
-                bookRef.getBook().getCopyRight().toString(),
+                bookRef.getBook().getCopyRight() != null ? bookRef.getBook().getCopyRight().toString() : "N/A",
                 bookRef.getBook().getLanguage(),
-                bookRef.getBook().getBookCatalog().getSection().getLocation().getName(),
                 bookRef.getStatus());
     }
 

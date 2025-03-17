@@ -47,4 +47,26 @@ public interface BookRepository extends JpaRepository<Books, Integer>, BookCusto
 			ORDER BY STR_TO_DATE(a.acquired_date, '%Y-%m-%d') DESC
 			""", nativeQuery = true)
 	List<Books> findAllNewlyAcquiredBooks();
+
+	@Query(value = """
+			SELECT b.* FROM books b
+			LEFT JOIN book_reference br ON b.id = br.books_id AND br.course_id = :courseId
+			WHERE br.id IS NULL
+			AND b.id = (
+			SELECT MIN(b2.id)
+			FROM books b2
+			WHERE b2.title = b.title
+			)
+			""", nativeQuery = true)
+	List<Books> findUniqueBooksNotInReference(@Param("courseId") Integer courseId);
+
+	@Query(value = """
+			SELECT b.* FROM books b
+			WHERE b.id = (
+			SELECT MIN(b2.id)
+			FROM books b2
+			WHERE b2.title = b.title
+			)
+			""", nativeQuery = true)
+	List<Books> findAllBooksUniqueOnly();
 }
