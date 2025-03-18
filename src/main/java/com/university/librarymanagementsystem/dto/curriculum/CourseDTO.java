@@ -28,4 +28,6 @@ public class CourseDTO {
     private String course_name;
     private int year_level;
     private int sem;
+
+    private int major;
 }

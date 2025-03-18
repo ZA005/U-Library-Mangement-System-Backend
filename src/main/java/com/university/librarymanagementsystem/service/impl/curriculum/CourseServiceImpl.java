@@ -57,13 +57,24 @@ public class CourseServiceImpl implements CourseService {
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Curriculum with ID: " + courseDTO.getCurr_id() + " not found!"));
 
-            Optional<Course> existingCourse = courseRepository.findByCourseCodeSingle(courseDTO.getCourse_code());
+            String progCode = curriculum.getProgram().getCode();
+            String courseCode = courseDTO.getCourse_code();
+
+            System.out.println("PROGRAM CODE:" + progCode);
+            System.out.println("COURSE CODE:" + courseCode);
+            String cleanedProgCode = progCode.replace("BS", "");
+
+            System.out.println("NEW PROGRAM CODE:" + cleanedProgCode);
+
+            int isMajor = courseCode.contains(cleanedProgCode) ? 1 : 0;
+
+            Optional<Course> existingCourse = courseRepository.findByCourseCodeSingle(courseCode);
 
             if (existingCourse.isPresent()) {
                 Course course = existingCourse.get();
 
                 Optional<Course> courseInCurriculum = courseRepository.findByCourseCodeAndCurriculum(
-                        courseDTO.getCourse_code(), courseDTO.getCurr_id());
+                        courseCode, courseDTO.getCurr_id());
 
                 if (courseInCurriculum.isEmpty()) {
                     Course linkedCourse = new Course();
@@ -72,15 +83,17 @@ public class CourseServiceImpl implements CourseService {
                     linkedCourse.setYear_level(course.getYear_level());
                     linkedCourse.setSem(course.getSem());
                     linkedCourse.setCurriculum(curriculum);
+                    linkedCourse.setMajor(isMajor);
 
                     courseToLink.add(linkedCourse);
                 }
             } else {
                 Course newCourse = CourseMapper.maptoCourse(courseDTO);
                 newCourse.setCurriculum(curriculum);
+                newCourse.setMajor(isMajor);
 
                 Optional<Course> existingMajor = courseRepository.findByCourseCodeAndCurriculum(
-                        courseDTO.getCourse_code(), courseDTO.getCurr_id());
+                        courseCode, courseDTO.getCurr_id());
 
                 if (existingMajor.isPresent()) {
                     Course majorCourse = existingMajor.get();

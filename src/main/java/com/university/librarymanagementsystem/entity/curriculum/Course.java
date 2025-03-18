@@ -40,4 +40,7 @@ public class Course {
 
     @Column(name = "sem", nullable = false)
     private int sem;
+
+    @Column(name = "is_major", nullable = false)
+    private int major;
 }
