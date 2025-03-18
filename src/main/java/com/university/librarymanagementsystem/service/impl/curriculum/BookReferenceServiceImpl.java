@@ -1,5 +1,6 @@
 package com.university.librarymanagementsystem.service.impl.curriculum;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,7 @@ import com.university.librarymanagementsystem.repository.curriculum.BookReferenc
 import com.university.librarymanagementsystem.repository.curriculum.CourseRepository;
 import com.university.librarymanagementsystem.service.curriculum.BookReferenceService;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -33,28 +35,51 @@ public class BookReferenceServiceImpl implements BookReferenceService {
         System.out.println("Course:" + bookRefDTO.getCourse_name());
         System.out.println("Title:" + bookRefDTO.getBook_name());
         System.out.println("Copyright:" + bookRefDTO.getCopyright());
+
         Course subject = subjectRepository.findById(bookRefDTO.getCourse_id())
                 .orElseThrow(() -> new ResourceNotFoundException("Subject not found!"));
 
-        BookReference bookRef = BookReferenceMapper.mapToBookRef(bookRefDTO);
+        List<Course> sameCourses = subjectRepository.findByCourseCodeMultiple(subject.getCourse_code());
 
-        bookRef.setCourse(subject);
+        List<BookReference> bookReferences = new ArrayList<>();
 
-        BookReference savedBookRef = bookRefRepository.save(bookRef);
+        for (Course sameCourse : sameCourses) {
+            boolean exists = bookRefRepository.countByCourseIdAndBookId(sameCourse.getId(),
+                    bookRefDTO.getBook_id()) > 0;
 
-        return BookReferenceMapper.mapToBookRefDTO(savedBookRef);
+            if (!exists) {
+                BookReference bookRef = BookReferenceMapper.mapToBookRef(bookRefDTO);
+                bookRef.setCourse(sameCourse);
+                bookReferences.add(bookRef);
+            }
+        }
+
+        List<BookReference> savedBookRefs = bookRefRepository.saveAll(bookReferences);
+
+        return savedBookRefs.isEmpty() ? null : BookReferenceMapper.mapToBookRefDTO(savedBookRefs.get(0));
     }
 
     @Override
     public List<BookReferenceDTO> addMultipleBookRef(List<BookReferenceDTO> bookReferenceDTOs) {
-        List<BookReference> bookReferences = bookReferenceDTOs.stream().map(bookRefDTO -> {
-            Course subject = subjectRepository.findById(bookRefDTO.getCourse_id())
-                    .orElseThrow(() -> new ResourceNotFoundException("Subject not found!"));
+        List<BookReference> bookReferences = new ArrayList<>();
 
-            BookReference bookRef = BookReferenceMapper.mapToBookRef(bookRefDTO);
-            bookRef.setCourse(subject);
-            return bookRef;
-        }).collect(Collectors.toList());
+        for (BookReferenceDTO bookRefDTO : bookReferenceDTOs) {
+            Course subject = subjectRepository.findById(bookRefDTO.getCourse_id())
+                    .orElseThrow(() -> new ResourceNotFoundException("Course not found!"));
+
+            List<Course> sameCourses = subjectRepository.findByCourseCodeMultiple(subject.getCourse_code());
+
+            for (Course sameCourse : sameCourses) {
+                boolean exists = bookRefRepository.countByCourseIdAndBookId(sameCourse.getId(),
+                        bookRefDTO.getBook_id()) > 0;
+
+                if (!exists) {
+                    BookReference bookRef = BookReferenceMapper.mapToBookRef(bookRefDTO);
+                    bookRef.setCourse(sameCourse);
+                    bookReferences.add(bookRef);
+                }
+            }
+        }
 
         List<BookReference> savedBookReferences = bookRefRepository.saveAll(bookReferences);
 
@@ -94,11 +119,15 @@ public class BookReferenceServiceImpl implements BookReferenceService {
     }
 
     @Override
+    @Transactional
     public void removeBookRef(Integer bookRefId) {
-        if (bookRefRepository.existsById(bookRefId)) {
-            bookRefRepository.deleteById(bookRefId);
-        } else {
-            throw new RuntimeException("Book reference not found with ID: " + bookRefId);
-        }
+        BookReference bookRef = bookRefRepository.findById(bookRefId)
+                .orElseThrow(() -> new RuntimeException("Book reference not found with ID: " + bookRefId));
+
+        Course subject = bookRef.getCourse();
+        String bookName = bookRef.getBook().getTitle();
+
+        bookRefRepository.deleteByCourseCodeAndBookName(subject.getCourse_code(), bookName);
     }
+
 }
