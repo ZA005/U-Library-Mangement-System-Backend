@@ -2,6 +2,7 @@ package com.university.librarymanagementsystem.service.impl.curriculum;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -47,57 +48,77 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public List<CourseDTO> uploadCourses(List<CourseDTO> coursesDTO) {
-        coursesDTO.forEach(dto -> {
-            System.out.println("COURSE ID: " + dto.getId());
-        });
+        List<Course> courseToUpdate = new ArrayList<>();
+        List<Course> courseToSave = new ArrayList<>();
+        List<Course> courseToLink = new ArrayList<>();
 
-        List<Course> courses = coursesDTO.stream().map(courseDTO -> {
+        for (CourseDTO courseDTO : coursesDTO) {
             Curriculum curriculum = currRepository.findById(courseDTO.getCurr_id())
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Curriculum with ID: " + courseDTO.getCurr_id() + " not found!"));
 
-            Course course = CourseMapper.maptoCourse(courseDTO);
+            Optional<Course> existingCourse = courseRepository.findByCourseCodeSingle(courseDTO.getCourse_code());
 
-            course.setCurriculum(curriculum);
+            if (existingCourse.isPresent()) {
+                Course course = existingCourse.get();
 
-            return course;
-        }).collect(Collectors.toList());
+                Optional<Course> courseInCurriculum = courseRepository.findByCourseCodeAndCurriculum(
+                        courseDTO.getCourse_code(), courseDTO.getCurr_id());
 
-        List<Course> courseToUpdate = new ArrayList<>();
-        List<Course> courseToSave = new ArrayList<>();
+                if (courseInCurriculum.isEmpty()) {
+                    Course linkedCourse = new Course();
+                    linkedCourse.setCourse_code(course.getCourse_code());
+                    linkedCourse.setCourse_name(course.getCourse_name());
+                    linkedCourse.setYear_level(course.getYear_level());
+                    linkedCourse.setSem(course.getSem());
+                    linkedCourse.setCurriculum(curriculum);
 
-        for (Course course : courses) {
-            Course existingCourse = courseRepository.findById(course.getId()).orElse(null);
-
-            if (existingCourse != null) {
-                // Skip if the course code, name, and year level are the same
-                if (!existingCourse.getCourse_code().equals(course.getCourse_code()) ||
-                        !existingCourse.getCourse_name().equals(course.getCourse_name()) ||
-                        existingCourse.getYear_level() != course.getYear_level()) {
-                    courseToUpdate.add(course);
+                    courseToLink.add(linkedCourse);
                 }
             } else {
-                courseToSave.add(course);
-            }
+                Course newCourse = CourseMapper.maptoCourse(courseDTO);
+                newCourse.setCurriculum(curriculum);
 
+                Optional<Course> existingMajor = courseRepository.findByCourseCodeAndCurriculum(
+                        courseDTO.getCourse_code(), courseDTO.getCurr_id());
+
+                if (existingMajor.isPresent()) {
+                    Course majorCourse = existingMajor.get();
+
+                    if (!majorCourse.getCourse_name().equals(newCourse.getCourse_name()) ||
+                            majorCourse.getYear_level() != newCourse.getYear_level()) {
+                        majorCourse.setCourse_name(newCourse.getCourse_name());
+                        majorCourse.setYear_level(newCourse.getYear_level());
+                        majorCourse.setSem(newCourse.getSem());
+
+                        courseToUpdate.add(majorCourse);
+                    }
+                } else {
+                    courseToSave.add(newCourse);
+                }
+            }
         }
 
-        List<Course> savedCourse = new ArrayList<>();
+        List<Course> savedCourses = new ArrayList<>();
 
         if (!courseToSave.isEmpty()) {
-            savedCourse = courseRepository.saveAll(courseToSave);
+            savedCourses = courseRepository.saveAll(courseToSave);
         }
 
         if (!courseToUpdate.isEmpty()) {
             courseRepository.saveAll(courseToUpdate);
         }
 
-        List<Course> finalCourse = new ArrayList<>();
+        if (!courseToLink.isEmpty()) {
+            courseRepository.saveAll(courseToLink);
+        }
 
-        finalCourse.addAll(savedCourse);
-        finalCourse.addAll(courseToUpdate);
+        List<Course> finalCourses = new ArrayList<>();
+        finalCourses.addAll(savedCourses);
+        finalCourses.addAll(courseToUpdate);
+        finalCourses.addAll(courseToLink);
 
-        return finalCourse.stream().map(CourseMapper::mapToCourseDTO).collect(Collectors.toList());
+        return finalCourses.stream().map(CourseMapper::mapToCourseDTO).collect(Collectors.toList());
     }
 
     @Override

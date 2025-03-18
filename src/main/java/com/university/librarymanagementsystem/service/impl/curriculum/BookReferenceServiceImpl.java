@@ -1,5 +1,6 @@
 package com.university.librarymanagementsystem.service.impl.curriculum;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,23 +34,50 @@ public class BookReferenceServiceImpl implements BookReferenceService {
         System.out.println("Course:" + bookRefDTO.getCourse_name());
         System.out.println("Title:" + bookRefDTO.getBook_name());
         System.out.println("Copyright:" + bookRefDTO.getCopyright());
+
         Course subject = subjectRepository.findById(bookRefDTO.getCourse_id())
                 .orElseThrow(() -> new ResourceNotFoundException("Subject not found!"));
 
-        BookReference bookRef = BookReferenceMapper.mapToBookRef(bookRefDTO);
+        // Get all courses with the same course code (for minor subjects)
+        List<Course> sameCourses = subjectRepository.findByCourseCodeMultiple(subject.getCourse_code());
 
-        bookRef.setCourse(subject);
+        // Store book references for all matching courses
+        List<BookReference> bookReferences = new ArrayList<>();
 
-        BookReference savedBookRef = bookRefRepository.save(bookRef);
+        for (Course sameCourse : sameCourses) {
+            BookReference bookRef = BookReferenceMapper.mapToBookRef(bookRefDTO);
+            bookRef.setCourse(sameCourse);
+            bookReferences.add(bookRef);
+        }
 
-        return BookReferenceMapper.mapToBookRefDTO(savedBookRef);
+        // Save all book references
+        List<BookReference> savedBookRefs = bookRefRepository.saveAll(bookReferences);
+
+        // Convert and return the first saved reference
+        return BookReferenceMapper.mapToBookRefDTO(savedBookRefs.get(0));
     }
 
     @Override
     public List<BookReferenceDTO> addMultipleBookRef(List<BookReferenceDTO> bookReferenceDTOs) {
         List<BookReference> bookReferences = bookReferenceDTOs.stream().map(bookRefDTO -> {
             Course subject = subjectRepository.findById(bookRefDTO.getCourse_id())
-                    .orElseThrow(() -> new ResourceNotFoundException("Subject not found!"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Course not found!"));
+
+            List<Course> sameCourses = subjectRepository.findByCourseCodeMultiple(subject.getCourse_code());
+
+            if (sameCourses.size() > 1) {
+                List<BookReference> existingReferences = bookRefRepository
+                        .findAllBookReferenceByCourse(sameCourses.get(0).getId());
+
+                if (!existingReferences.isEmpty()) {
+                    existingReferences.forEach(ref -> {
+                        BookReference newRef = new BookReference();
+                        newRef.setCourse(subject);
+                        newRef.setBook(ref.getBook());
+                        bookRefRepository.save(newRef);
+                    });
+                }
+            }
 
             BookReference bookRef = BookReferenceMapper.mapToBookRef(bookRefDTO);
             bookRef.setCourse(subject);
