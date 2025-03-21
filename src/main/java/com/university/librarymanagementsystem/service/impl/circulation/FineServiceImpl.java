@@ -3,9 +3,11 @@ package com.university.librarymanagementsystem.service.impl.circulation;
 import com.university.librarymanagementsystem.dto.circulation.FineDTO;
 import com.university.librarymanagementsystem.entity.circulation.Fine;
 import com.university.librarymanagementsystem.entity.circulation.Loan;
+import com.university.librarymanagementsystem.entity.circulation.Overdue;
 import com.university.librarymanagementsystem.mapper.circulation.FineMapper;
 import com.university.librarymanagementsystem.repository.circulation.FineRepository;
 import com.university.librarymanagementsystem.repository.circulation.LoanRepository;
+import com.university.librarymanagementsystem.repository.circulation.OverdueRepository;
 import com.university.librarymanagementsystem.service.circulation.FineService;
 
 import jakarta.transaction.Transactional;
@@ -16,58 +18,132 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+/**
+ * Implementation of the FineService interface responsible for calculating,
+ * retrieving,
+ * and updating fines for overdue library loans.
+ */
 @Service
 @AllArgsConstructor
 public class FineServiceImpl implements FineService {
 
-    private static final BigDecimal HOURLY_FINE_RATE = new BigDecimal("1.00");
-    private static final BigDecimal DAILY_FINE_RATE = new BigDecimal("24.00");
+    // Fine rates
+    private static final BigDecimal HOURLY_FINE_RATE = new BigDecimal("1.00"); // Fine per hour
+    private static final BigDecimal DAILY_FINE_RATE = new BigDecimal("24.00"); // Fine per day
 
+    // Repository dependencies
     private LoanRepository loanRepo;
     private FineRepository fineRepo;
+    private OverdueRepository overdueRepo;
 
-    @Override
+    /**
+     * Scheduled method that runs every hour to calculate fines for overdue loans.
+     * It retrieves all overdue records, determines the fine amount, and either
+     * updates
+     * an existing fine or creates a new fine entry.
+     */
+    @Scheduled(fixedRate = 3600000) // Runs every hour (3600000ms)
     @Transactional
-    public void calculateFine(Loan loan) {
-        if (loan.getReturnDate() == null || loan.getReturnDate().isBefore(loan.getDueDate())) {
-            return;
+    @Override
+    public void calculateFine() {
+        // Retrieve all overdue records from the database
+        List<Overdue> overdueLoans = overdueRepo.findAll();
+
+        // Loop through each overdue record
+        for (Overdue overdue : overdueLoans) {
+            // Find the corresponding loan based on account ID and due date
+            Optional<Loan> loanOpt = loanRepo.findByAccountIdAndDueDate(
+                    overdue.getAccount().getAccount_id(), overdue.getDueDate());
+
+            // If no matching loan is found, skip this iteration
+            if (loanOpt.isEmpty()) {
+                continue;
+            }
+
+            Loan loan = loanOpt.get(); // Get the loan entity
+
+            // Calculate total fine amount based on overdue duration
+            BigDecimal totalFine = calculateFineAmount(overdue.getTotalHoursOverdue(), overdue.getTotalDaysOverdue());
+
+            // Check if a fine entry already exists for this loan
+            Optional<Fine> existingFine = fineRepo.findByLoan(loan);
+
+            if (existingFine.isPresent()) {
+                // Update existing fine record with the new fine amount
+                Fine fine = existingFine.get();
+
+                if (fine.getPaymentDate() != null) {
+                    continue; // Skip this row as payment has been made
+                }
+                fine.setFine_amount(totalFine);
+                fineRepo.save(fine);
+            } else {
+                // Create a new fine entry in the database
+                Fine newFine = new Fine();
+                newFine.setLoan(loan);
+                newFine.setAccount(overdue.getAccount()); // Associate fine with the account
+                newFine.setFine_amount(totalFine);
+                newFine.setStatus((byte) 0); // Status 0 = Unpaid
+                newFine.setFineDate(LocalDateTime.now()); // Timestamp for when the fine was issued
+
+                fineRepo.save(newFine); // Save new fine entry
+            }
         }
-
-        // BigDecimal fineAmount =
-        // DAILY_FINE_RATE.multiply(BigDecimal.valueOf(overdue.getTotalDaysOverdue()))
-        // .add(HOURLY_FINE_RATE.multiply(BigDecimal.valueOf(overdue.getTotalHoursOverdue())));
-
-        // Fine fine = FineMapper.mapToFine(new FineDTO(
-        // 0,
-        // loan.getId(),
-        // loan.getAccount().getAccount_id(),
-        // loan.getAccount().getUsername(),
-        // fineAmount,
-        // (byte) 0, // 0: Unpaid, 1: Paid
-        // LocalDateTime.now(),
-        // null));
-
-        // fineRepo.save(fine);
     }
 
+    /**
+     * Retrieves all fines from the database.
+     * 
+     * @return List of all fines
+     * @throws UnsupportedOperationException since it's not yet implemented.
+     */
     @Override
     public List<Fine> getAllFines() {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getAllFines'");
     }
 
+    /**
+     * Retrieves a fine by loan ID.
+     * 
+     * @param loanId The ID of the loan for which the fine is to be retrieved.
+     * @return The Fine object associated with the loan.
+     * @throws UnsupportedOperationException since it's not yet implemented.
+     */
     @Override
     public Fine getFineByLoanId(int loanId) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getFineByLoanId'");
     }
 
+    /**
+     * Marks a fine as paid by updating its status in the database.
+     * 
+     * @param fineId The ID of the fine to mark as paid.
+     * @throws UnsupportedOperationException since it's not yet implemented.
+     */
     @Override
     public void markFineAsPaid(int fineId) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'markFineAsPaid'");
     }
 
+    /**
+     * Calculates the total fine amount based on the number of overdue hours and
+     * days.
+     * 
+     * @param totalHours The total number of hours overdue.
+     * @param totalDays  The total number of days overdue.
+     * @return The computed fine amount.
+     */
+    private BigDecimal calculateFineAmount(long totalHours, long totalDays) {
+        // Calculate the fine based on hourly rate
+        BigDecimal hourlyFine = HOURLY_FINE_RATE.multiply(BigDecimal.valueOf(totalHours));
+
+        // Calculate the fine based on daily rate
+        BigDecimal dailyFine = DAILY_FINE_RATE.multiply(BigDecimal.valueOf(totalDays));
+
+        // Return the total fine amount
+        return hourlyFine.add(dailyFine);
+    }
 }

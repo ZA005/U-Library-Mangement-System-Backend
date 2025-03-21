@@ -12,4 +12,7 @@ public interface LoanService {
     void checkAndUpdateOverdueLoans();
 
     void saveOverdueLoansToOverdueTable();
+
+    LoanDTO returnLoanItem(LoanDTO loanDTO);
+
 }

@@ -44,4 +44,18 @@ public class LoanController {
 
         return ResponseEntity.ok(loans);
     }
+
+    @PostMapping("/return")
+    public ResponseEntity<?> returnLoanItem(@RequestBody LoanDTO loanDTO) {
+        try {
+            LoanDTO updatedLoan = loanService.returnLoanItem(loanDTO);
+            return new ResponseEntity<>(updatedLoan, HttpStatus.OK);
+        } catch (ResourceNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("An error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

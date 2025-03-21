@@ -6,7 +6,7 @@ import com.university.librarymanagementsystem.entity.circulation.Fine;
 import com.university.librarymanagementsystem.entity.circulation.Loan;
 
 public interface FineService {
-    void calculateFine(Loan loan);
+    void calculateFine();
 
     List<Fine> getAllFines();
 
