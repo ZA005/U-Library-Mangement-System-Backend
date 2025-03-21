@@ -53,8 +53,10 @@ public class Overdue {
     @PrePersist
     @PreUpdate
     public void calculateOverdueDuration() {
-        if (returnedDate != null && returnedDate.isAfter(dueDate)) {
-            Duration overdueDuration = Duration.between(dueDate, returnedDate);
+        LocalDateTime referenceTime = (returnedDate != null) ? returnedDate : LocalDateTime.now();
+
+        if (referenceTime.isAfter(dueDate)) {
+            Duration overdueDuration = Duration.between(dueDate, referenceTime);
             this.totalHoursOverdue = overdueDuration.toHours();
             this.totalDaysOverdue = overdueDuration.toDays();
         } else {
@@ -62,4 +64,5 @@ public class Overdue {
             this.totalDaysOverdue = 0;
         }
     }
+
 }
