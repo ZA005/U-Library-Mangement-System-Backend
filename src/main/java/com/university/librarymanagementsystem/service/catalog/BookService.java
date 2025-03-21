@@ -25,6 +25,8 @@ public interface BookService {
 
     BookDTO fetchBookByID(int book_id);
 
+    BookDTO fetchBookByAccessionNumber(String accessionNumber);
+
     void weedBook(WeedInfoDTO weedInfoDTO);
 
     String generateCallNumber(String category, List<String> authors,
