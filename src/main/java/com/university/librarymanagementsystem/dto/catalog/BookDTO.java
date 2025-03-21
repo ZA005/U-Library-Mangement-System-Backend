@@ -5,6 +5,8 @@ import java.util.List;
 
 import com.university.librarymanagementsystem.enums.BookStatus;
 
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,6 +35,7 @@ public class BookDTO {
     private String copyRight;
     private String printType;
     private String format;
+    @Enumerated(EnumType.STRING)
     private BookStatus status;
     private String condition;
     private BookCatalogDTO bookCatalog;

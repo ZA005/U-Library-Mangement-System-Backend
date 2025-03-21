@@ -19,6 +19,8 @@ public interface BookRepository extends JpaRepository<Books, Integer>, BookCusto
 
 	List<Books> findByIsbn13(String isbn13);
 
+	Optional<Books> findByAccessionNumber(String accessionNumber);
+
 	boolean existsByIsbn13(String isbn13);
 
 	Optional<Books> findTopByIsbn13OrderByAccessionNumberDesc(String isbn13);
@@ -69,4 +71,5 @@ public interface BookRepository extends JpaRepository<Books, Integer>, BookCusto
 			)
 			""", nativeQuery = true)
 	List<Books> findAllBooksUniqueOnly();
+
 }
