@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import com.university.librarymanagementsystem.enums.LoanStatus;
 
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,6 +26,7 @@ public class LoanDTO {
     // ACCOUNT
     private int account_id;
     private String user_id;
+    private String email;
     private String firstName;
     private String middleName;
     private String lastName;
@@ -33,5 +36,6 @@ public class LoanDTO {
     private LocalDateTime loanDate;
     private LocalDateTime dueDate;
     private LocalDateTime returnDate;
+    @Enumerated(EnumType.STRING)
     private LoanStatus status;
 }
