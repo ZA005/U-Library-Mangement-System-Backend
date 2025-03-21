@@ -88,7 +88,7 @@ public class Books {
     private String format;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", nullable = false, length = 15)
     private BookStatus status;
 
     @Column(name = "condition_status", nullable = false)
