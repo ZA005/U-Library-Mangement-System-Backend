@@ -1,12 +1,18 @@
 package com.university.librarymanagementsystem.controller.circulation;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.university.librarymanagementsystem.config.JWTAuthFilter;
 import com.university.librarymanagementsystem.dto.circulation.LoanDTO;
+import com.university.librarymanagementsystem.exception.ResourceNotFoundException;
 import com.university.librarymanagementsystem.service.circulation.LoanService;
 
 import lombok.AllArgsConstructor;
@@ -18,10 +24,24 @@ public class LoanController {
 
     private LoanService loanService;
 
-    @PostMapping
-    public ResponseEntity<LoanDTO> newLoan(@RequestParam LoanDTO loanDTO) {
-        LoanDTO loan = loanService.newLoan(loanDTO);
+    @PostMapping("/add")
+    public ResponseEntity<?> newLoan(@RequestBody LoanDTO loanDTO) {
+        try {
+            LoanDTO loan = loanService.newLoan(loanDTO);
+            return new ResponseEntity<>(loan, HttpStatus.CREATED);
+        } catch (ResourceNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("An error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
-        return new ResponseEntity<>(loan, HttpStatus.CREATED);
+    @GetMapping
+    public ResponseEntity<List<LoanDTO>> getAllLoan() {
+        List<LoanDTO> loans = loanService.getAllLoans();
+
+        return ResponseEntity.ok(loans);
     }
 }

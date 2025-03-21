@@ -44,7 +44,7 @@ public class Loan {
     @ToString.Exclude
     private Books book;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "account_id", nullable = false)
     @JsonIgnore
     private Account account;
@@ -58,7 +58,7 @@ public class Loan {
     @Column(name = "return_date")
     private LocalDateTime returnDate;
 
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", nullable = false, length = 15)
     @Enumerated(EnumType.STRING)
     private LoanStatus status;
 }

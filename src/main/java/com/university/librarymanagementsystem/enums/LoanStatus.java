@@ -1,5 +1,5 @@
 package com.university.librarymanagementsystem.enums;
 
 public enum LoanStatus {
-    ACTIVE, RETURNED, OVERDUE
+    LOANED_OUT, RETURNED, OVERDUE
 }
