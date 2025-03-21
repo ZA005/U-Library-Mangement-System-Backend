@@ -2,6 +2,7 @@ package com.university.librarymanagementsystem.dto.circulation;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.university.librarymanagementsystem.enums.LoanStatus;
 
 import jakarta.persistence.EnumType;
@@ -33,8 +34,11 @@ public class LoanDTO {
     private String suffix;
     private String role;
 
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime loanDate;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dueDate;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime returnDate;
     @Enumerated(EnumType.STRING)
     private LoanStatus status;
