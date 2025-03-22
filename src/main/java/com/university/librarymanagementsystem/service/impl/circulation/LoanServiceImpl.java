@@ -172,19 +172,6 @@ public class LoanServiceImpl implements LoanService {
             overdueRepo.save(overdue);
         }
 
-        // Update Fine entity if applicable
-        Optional<Fine> fineOpt = fineRepo.findByLoan(loan);
-
-        if (fineOpt.isPresent()) {
-            Fine fine = fineOpt.get();
-
-            if (fine.getPaymentDate() == null) { // If fine is unpaid, mark as paid
-                fine.setPaymentDate(now);
-                fine.setStatus((byte) 1); // Assuming 1 means 'Paid'
-                fineRepo.save(fine);
-            }
-        }
-
         // Update Book status to AVAILABLE
         Books book = loan.getBook();
         book.setStatus(BookStatus.AVAILABLE);
