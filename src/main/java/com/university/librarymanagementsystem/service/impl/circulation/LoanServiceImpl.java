@@ -179,11 +179,40 @@ public class LoanServiceImpl implements LoanService {
 
         // Create and store a new transaction for returning the loan
         TransactionHistory transaction = new TransactionHistory();
-        transaction.setTransactionType(TransactionType.RETURN);
+        transaction.setTransactionType(TransactionType.RETURNED);
         transaction.setLoan(loan);
         transaction.setTransactionDate(LocalDateTime.now());
 
         transactionRepo.save(transaction);
+
+        emailService.sendEmail(loanDTO.getEmail(), "Returned", loan.getBook().getTitle(),
+                loanDTO.getDueDate().toString());
+
+        return LoanMapper.mapToLoanDTO(loan);
+    }
+
+    @Transactional
+    @Override
+    public LoanDTO renewLoanItem(LoanDTO loanDTO) {
+        // Find the loan by ID
+        Loan loan = loanRepo.findById(loanDTO.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Loan not found"));
+
+        // Extend the due date by 1 day
+        LocalDateTime newDueDate = loan.getDueDate().plusDays(1);
+        loan.setDueDate(newDueDate);
+        loanRepo.save(loan);
+
+        // Create a transaction record for renewal
+        TransactionHistory transaction = new TransactionHistory();
+        transaction.setTransactionType(TransactionType.RENEWED);
+        transaction.setLoan(loan);
+        transaction.setTransactionDate(LocalDateTime.now());
+
+        transactionRepo.save(transaction);
+
+        // Send email notification about the renewal
+        emailService.sendEmail(loanDTO.getEmail(), "Renewed", loan.getBook().getTitle(), newDueDate.toString());
 
         return LoanMapper.mapToLoanDTO(loan);
     }

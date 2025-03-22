@@ -15,4 +15,5 @@ public interface LoanService {
 
     LoanDTO returnLoanItem(LoanDTO loanDTO);
 
+    LoanDTO renewLoanItem(LoanDTO loanDTO);
 }
