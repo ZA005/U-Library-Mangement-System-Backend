@@ -52,7 +52,7 @@ public class Loan {
     @Column(name = "loan_date", nullable = false)
     private LocalDateTime loanDate;
 
-    @Column(name = "due_date", nullable = false)
+    @Column(name = "due_date")
     private LocalDateTime dueDate;
 
     @Column(name = "return_date")

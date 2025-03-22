@@ -53,13 +53,24 @@ public class LoanServiceImpl implements LoanService {
                 throw new IllegalStateException("Book is already loaned out");
             }
 
+            // Ensure loanDate is set
+            LocalDateTime loanDate = loanDTO.getLoanDate() != null ? loanDTO.getLoanDate() : LocalDateTime.now();
+            LocalDateTime dueDate = loanDate.plusDays(1);
+
+            // Set dueDate in both DTO and entity
+            loanDTO.setDueDate(dueDate);
+
             Loan loan = LoanMapper.mapToLoan(loanDTO);
+            loan.setDueDate(dueDate);
             Loan savedLoan = loanRepo.save(loan);
 
             book.setStatus(BookStatus.LOANED_OUT);
             bookRepo.save(book);
 
-            emailService.sendEmail(loanDTO.getEmail(), "Borrowed", book.getTitle(), loanDTO.getDueDate().toString());
+            // Use null-safe handling to avoid null pointer exception
+            String dueDateString = loanDTO.getDueDate() != null ? loanDTO.getDueDate().toString()
+                    : "No due date assigned";
+            emailService.sendEmail(loanDTO.getEmail(), "Borrowed", book.getTitle(), dueDateString);
 
             TransactionHistory transaction = new TransactionHistory();
             transaction.setTransactionType(TransactionType.LOAN);
