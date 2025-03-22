@@ -13,14 +13,17 @@ import com.university.librarymanagementsystem.entity.catalog.book.Books;
 import com.university.librarymanagementsystem.entity.circulation.Fine;
 import com.university.librarymanagementsystem.entity.circulation.Loan;
 import com.university.librarymanagementsystem.entity.circulation.Overdue;
+import com.university.librarymanagementsystem.entity.circulation.TransactionHistory;
 import com.university.librarymanagementsystem.enums.BookStatus;
 import com.university.librarymanagementsystem.enums.LoanStatus;
+import com.university.librarymanagementsystem.enums.TransactionType;
 import com.university.librarymanagementsystem.exception.ResourceNotFoundException;
 import com.university.librarymanagementsystem.mapper.circulation.LoanMapper;
 import com.university.librarymanagementsystem.repository.catalog.BookRepository;
 import com.university.librarymanagementsystem.repository.circulation.FineRepository;
 import com.university.librarymanagementsystem.repository.circulation.LoanRepository;
 import com.university.librarymanagementsystem.repository.circulation.OverdueRepository;
+import com.university.librarymanagementsystem.repository.circulation.TransactionRepository;
 import com.university.librarymanagementsystem.repository.user.AccountRepository;
 import com.university.librarymanagementsystem.service.circulation.LoanService;
 import com.university.librarymanagementsystem.service.user.EmailService;
@@ -37,11 +40,11 @@ public class LoanServiceImpl implements LoanService {
     private LoanRepository loanRepo;
     private OverdueRepository overdueRepo;
     private FineRepository fineRepo;
+    private TransactionRepository transactionRepo;
     private EmailService emailService;
 
     @Override
     public LoanDTO newLoan(LoanDTO loanDTO) {
-
         try {
             Books book = bookRepo.findByAccessionNumber(loanDTO.getBook_accession_no())
                     .orElseThrow(() -> new ResourceNotFoundException("Book not found"));
@@ -57,6 +60,14 @@ public class LoanServiceImpl implements LoanService {
             bookRepo.save(book);
 
             emailService.sendEmail(loanDTO.getEmail(), "Borrowed", book.getTitle(), loanDTO.getDueDate().toString());
+
+            TransactionHistory transaction = new TransactionHistory();
+            transaction.setTransactionType(TransactionType.LOAN);
+            transaction.setLoan(savedLoan);
+            transaction.setTransactionDate(LocalDateTime.now());
+
+            transactionRepo.save(transaction);
+
             return LoanMapper.mapToLoanDTO(savedLoan);
         } catch (Exception e) {
             throw new RuntimeException("Error processing loan request: " + e.getMessage(), e);
@@ -100,7 +111,7 @@ public class LoanServiceImpl implements LoanService {
                 // If overdue entry exists, update return date and recalculate duration
                 Overdue overdue = existingOverdue.get();
                 overdue.setReturnedDate(loan.getReturnDate());
-                overdue.calculateOverdueDuration(); // Recalculate overdue duration
+                overdue.calculateOverdueDuration();
                 overdueRepo.save(overdue);
             } else {
                 // If no existing entry, create a new Overdue record
@@ -108,10 +119,18 @@ public class LoanServiceImpl implements LoanService {
                 newOverdue.setAccount(loan.getAccount());
                 newOverdue.setDueDate(loan.getDueDate());
                 newOverdue.setReturnedDate(loan.getReturnDate());
-                newOverdue.calculateOverdueDuration(); // Ensure overdue duration is calculated
+                newOverdue.calculateOverdueDuration();
 
                 overdueRepo.save(newOverdue);
             }
+
+            // Create and store a new transaction for overdue loans
+            TransactionHistory transaction = new TransactionHistory();
+            transaction.setTransactionType(TransactionType.OVERDUE);
+            transaction.setLoan(loan);
+            transaction.setTransactionDate(LocalDateTime.now());
+
+            transactionRepo.save(transaction);
         }
     }
 
@@ -128,8 +147,7 @@ public class LoanServiceImpl implements LoanService {
         loanRepo.save(loan);
 
         // Update Overdue entity if overdue
-        Optional<Overdue> overdueOpt = overdueRepo.findByAccountAndDueDate(loan.getAccount(),
-                loan.getDueDate());
+        Optional<Overdue> overdueOpt = overdueRepo.findByAccountAndDueDate(loan.getAccount(), loan.getDueDate());
 
         if (overdueOpt.isPresent()) {
             Overdue overdue = overdueOpt.get();
@@ -160,6 +178,14 @@ public class LoanServiceImpl implements LoanService {
         Books book = loan.getBook();
         book.setStatus(BookStatus.AVAILABLE);
         bookRepo.save(book);
+
+        // Create and store a new transaction for returning the loan
+        TransactionHistory transaction = new TransactionHistory();
+        transaction.setTransactionType(TransactionType.RETURN);
+        transaction.setLoan(loan);
+        transaction.setTransactionDate(LocalDateTime.now());
+
+        transactionRepo.save(transaction);
 
         return LoanMapper.mapToLoanDTO(loan);
     }
