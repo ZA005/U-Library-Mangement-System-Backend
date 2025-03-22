@@ -204,7 +204,8 @@ public class BookServiceImpl implements BookService {
     private List<Books> filterActiveBooks(List<Books> books) {
         return books.stream()
                 .filter(book -> !BookStatus.WEEDED.equals(book.getStatus())
-                        && !BookStatus.ARCHIVED.equals(book.getStatus()))
+                        && !BookStatus.ARCHIVED.equals(book.getStatus())
+                        && !BookStatus.LOANED_OUT.equals(book.getStatus()))
                 .toList();
     }
 
