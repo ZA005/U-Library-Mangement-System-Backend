@@ -10,12 +10,14 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import com.university.librarymanagementsystem.dto.circulation.LoanDTO;
 import com.university.librarymanagementsystem.entity.catalog.book.Books;
-import com.university.librarymanagementsystem.entity.circulation.Fine;
 import com.university.librarymanagementsystem.entity.circulation.Loan;
 import com.university.librarymanagementsystem.entity.circulation.Overdue;
+import com.university.librarymanagementsystem.entity.circulation.Reservation;
 import com.university.librarymanagementsystem.entity.circulation.TransactionHistory;
+import com.university.librarymanagementsystem.entity.user.Account;
 import com.university.librarymanagementsystem.enums.BookStatus;
 import com.university.librarymanagementsystem.enums.LoanStatus;
+import com.university.librarymanagementsystem.enums.ReservationStatus;
 import com.university.librarymanagementsystem.enums.TransactionType;
 import com.university.librarymanagementsystem.exception.ResourceNotFoundException;
 import com.university.librarymanagementsystem.mapper.circulation.LoanMapper;
@@ -23,6 +25,7 @@ import com.university.librarymanagementsystem.repository.catalog.BookRepository;
 import com.university.librarymanagementsystem.repository.circulation.FineRepository;
 import com.university.librarymanagementsystem.repository.circulation.LoanRepository;
 import com.university.librarymanagementsystem.repository.circulation.OverdueRepository;
+import com.university.librarymanagementsystem.repository.circulation.ReservationRepository;
 import com.university.librarymanagementsystem.repository.circulation.TransactionRepository;
 import com.university.librarymanagementsystem.repository.user.AccountRepository;
 import com.university.librarymanagementsystem.service.circulation.LoanService;
@@ -36,10 +39,9 @@ import lombok.AllArgsConstructor;
 public class LoanServiceImpl implements LoanService {
 
     private BookRepository bookRepo;
-    private AccountRepository accountRepo;
     private LoanRepository loanRepo;
     private OverdueRepository overdueRepo;
-    private FineRepository fineRepo;
+    private ReservationRepository reservationRepo;
     private TransactionRepository transactionRepo;
     private EmailService emailService;
 
@@ -159,7 +161,6 @@ public class LoanServiceImpl implements LoanService {
 
         // Update Overdue entity if overdue
         Optional<Overdue> overdueOpt = overdueRepo.findByAccountAndDueDate(loan.getAccount(), loan.getDueDate());
-
         if (overdueOpt.isPresent()) {
             Overdue overdue = overdueOpt.get();
             overdue.setReturnedDate(now);
@@ -172,20 +173,46 @@ public class LoanServiceImpl implements LoanService {
             overdueRepo.save(overdue);
         }
 
-        // Update Book status to AVAILABLE
+        // Update Book status
         Books book = loan.getBook();
-        book.setStatus(BookStatus.AVAILABLE);
+
+        // Check if the book is reserved
+        Optional<Reservation> nextReservation = reservationRepo.findFirstByBookAndStatusOrderByReservationDateAsc(
+                book, ReservationStatus.PENDING);
+
+        if (nextReservation.isPresent()) {
+            // Notify the next borrower
+            Reservation reservation = nextReservation.get();
+            Account nextBorrower = reservation.getAccount();
+            emailService.sendEmail(
+                    nextBorrower.getUsers().getEmailAdd(),
+                    "Notify",
+                    book.getTitle(),
+                    reservation.getExpirationDate().toString());
+
+            // Update reservation status to NOTIFIED
+            reservation.setStatus(ReservationStatus.NOTIFIED);
+            reservationRepo.save(reservation);
+
+            // Keep book status as RESERVED since it's reserved for the next borrower
+            book.setStatus(BookStatus.RESERVED);
+        } else {
+            // No reservation, mark the book as AVAILABLE
+            book.setStatus(BookStatus.AVAILABLE);
+        }
+
         bookRepo.save(book);
 
         // Create and store a new transaction for returning the loan
         TransactionHistory transaction = new TransactionHistory();
         transaction.setTransactionType(TransactionType.RETURNED);
         transaction.setLoan(loan);
-        transaction.setTransactionDate(LocalDateTime.now());
-
+        transaction.setTransactionDate(now);
         transactionRepo.save(transaction);
 
-        emailService.sendEmail(loanDTO.getEmail(), "Returned", loan.getBook().getTitle(),
+        // Send email notification to the returning borrower
+        emailService.sendEmail(loanDTO.getEmail(), "Returned",
+                "You have successfully returned the book: " + book.getTitle(),
                 loanDTO.getDueDate().toString());
 
         return LoanMapper.mapToLoanDTO(loan);

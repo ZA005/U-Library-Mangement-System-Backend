@@ -3,6 +3,7 @@ package com.university.librarymanagementsystem.entity.circulation;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.university.librarymanagementsystem.entity.catalog.book.Books;
 import com.university.librarymanagementsystem.entity.user.Account;
 import com.university.librarymanagementsystem.enums.ReservationStatus;
 
@@ -35,12 +36,20 @@ public class Reservation {
     private int id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_id", nullable = false)
+    @JsonIgnore
+    private Books book;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)
     @JsonIgnore
     private Account account;
 
     @Column(name = "reservation_date", nullable = false)
     private LocalDateTime reservationDate;
+
+    @Column(name = "expiration_date", nullable = false)
+    private LocalDateTime expirationDate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
