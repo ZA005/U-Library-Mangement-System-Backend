@@ -13,6 +13,6 @@ public class SectionDTO {
 
     private int id;
     private String sectionName;
-    private byte status;
+    private Boolean status;
     private LocationDTO location;
 }
