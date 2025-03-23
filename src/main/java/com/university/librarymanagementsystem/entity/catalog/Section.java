@@ -27,11 +27,11 @@ public class Section {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "location_id", referencedColumnName = "id", nullable = false)
     private Location location;
 
     private String sectionName;
 
-    private byte status;
+    private Boolean status;
 }

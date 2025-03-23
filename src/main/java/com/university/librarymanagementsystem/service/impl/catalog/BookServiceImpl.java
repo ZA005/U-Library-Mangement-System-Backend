@@ -107,15 +107,36 @@ public class BookServiceImpl implements BookService {
     public List<BookDTO> fetchAllBooks() {
         List<Books> books = bookRepository.findAll();
 
+        // Map of catalog ID to total copies from BookCatalog
+        Map<Integer, Integer> totalCopiesMap = bookCatalogRepository.findAll()
+                .stream()
+                .collect(Collectors.toMap(
+                        BookCatalog::getId,
+                        BookCatalog::getCopies));
+
+        // Map of catalog ID to number of LOANED_OUT books
+        Map<Integer, Long> loanedOutCopiesMap = books.stream()
+                .filter(book -> BookStatus.LOANED_OUT.equals(book.getStatus()))
+                .collect(Collectors.groupingBy(
+                        book -> book.getBookCatalog().getId(),
+                        Collectors.counting()));
+
         return filterActiveBooks(books).stream()
                 .collect(Collectors.collectingAndThen(
                         Collectors.toMap(
                                 Books::getIsbn13,
-                                BookMapper::mapToBookDTO,
+                                book -> {
+                                    BookDTO dto = BookMapper.mapToBookDTO(book);
+                                    int catalogId = book.getBookCatalog().getId();
+                                    int totalCopies = totalCopiesMap.getOrDefault(catalogId, 0);
+                                    long loanedOutCopies = loanedOutCopiesMap.getOrDefault(catalogId, 0L);
+                                    int availableCopies = totalCopies - (int) loanedOutCopies;
+                                    dto.getBookCatalog().setCopies(availableCopies < 0 ? 0 : availableCopies);
+                                    return dto;
+                                },
                                 (dto1, dto2) -> dto1,
                                 LinkedHashMap::new),
                         map -> new ArrayList<>(map.values())));
-
     }
 
     @Override
