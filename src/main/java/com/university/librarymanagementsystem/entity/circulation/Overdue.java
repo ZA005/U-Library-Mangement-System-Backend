@@ -38,7 +38,7 @@ public class Overdue {
     @JsonIgnore
     private Account account;
 
-    @Column(name = "due_date", nullable = false)
+    @Column(name = "due_date")
     private LocalDateTime dueDate;
 
     @Column(name = "returned_date")

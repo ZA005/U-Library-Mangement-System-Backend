@@ -31,8 +31,8 @@ public class TransactionHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    @Column(name = "transaction_type", nullable = false, length = 15)
     @Enumerated(EnumType.STRING)
-    @Column(name = "transaction_type", nullable = false)
     private TransactionType transactionType;
 
     @ManyToOne(fetch = FetchType.LAZY)
