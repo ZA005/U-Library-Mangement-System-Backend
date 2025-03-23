@@ -29,7 +29,7 @@ public interface BookService {
 
     void weedBook(WeedInfoDTO weedInfoDTO);
 
-    String generateCallNumber(String category, List<String> authors,
-            String publishedDate, String title);
+    String generateCallNumber(String title, String category, List<String> authors,
+            String publishedDate);
 
 }
