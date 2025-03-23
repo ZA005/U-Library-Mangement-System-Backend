@@ -69,9 +69,7 @@ public class BookServiceImpl implements BookService {
         Books book = bookRepository.findById(book_id)
                 .orElseThrow(() -> new ResourceNotFoundException("Book not found with id " + book_id));
 
-        BookDTO bookDTO = BookMapper.mapToBookDTO(book);
-
-        return bookDTO;
+        return BookMapper.mapToBookDTO(book);
     }
 
     @Override
@@ -80,9 +78,7 @@ public class BookServiceImpl implements BookService {
                 .orElseThrow(
                         () -> new ResourceNotFoundException("Book not found with accession number " + accessionNumber));
 
-        BookDTO bookDTO = BookMapper.mapToBookDTO(book);
-
-        return bookDTO;
+        return BookMapper.mapToBookDTO(book);
     }
 
     @Override
@@ -94,13 +90,13 @@ public class BookServiceImpl implements BookService {
 
         Section section = getSection(bookCatalogDTO.getSection().getId());
         Acquisition acquisition = getAcquisition(bookCatalogDTO.getAcquisitionDetails().getId());
-
+        acquisition.setStatus(1);
         int copies = getCopies(bookCatalogDTO);
         String baseAccessionNumber = bookDTO.getAccessionNumber();
         int startingCopyNumber = getStartingCopyNumber(bookDTO, baseAccessionNumber);
 
         BookCatalog catalog = saveBookCatalog(bookCatalogDTO, section, acquisition);
-
+        acquisitionRepository.save(acquisition);
         return saveBooks(bookDTO, catalog, copies, baseAccessionNumber, startingCopyNumber);
     }
 
