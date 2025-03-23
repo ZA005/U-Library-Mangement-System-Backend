@@ -46,7 +46,7 @@ public class ReservationServiceImpl implements ReservationService {
         reservation.setBook(book);
         reservation.setAccount(account);
         reservation.setReservationDate(LocalDateTime.now());
-        reservation.setExpirationDate(LocalDateTime.now().plusDays(7)); // Default 7-day expiration
+        reservation.setExpirationDate(LocalDateTime.now().plusDays(1)); // Default 7-day expiration
         reservation.setStatus(ReservationStatus.PENDING);
 
         Reservation savedReservation = reservationRepository.save(reservation);
