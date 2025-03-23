@@ -1,5 +1,8 @@
 package com.university.librarymanagementsystem.mapper.curriculum;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Component;
 
 import com.university.librarymanagementsystem.dto.curriculum.BookReferenceDTO;
@@ -16,11 +19,15 @@ public class BookReferenceMapper {
                 bookRef.getCourse().getCourse_name(),
                 bookRef.getBook().getId(),
                 bookRef.getBook().getTitle(),
+                bookRef.getBook().getAuthors() != null
+                        ? bookRef.getBook().getAuthors().stream()
+                                .map(author -> author.getName())
+                                .collect(Collectors.toList())
+                        : List.of(),
                 bookRef.getBook().getIsbn10(),
                 bookRef.getBook().getIsbn13(),
-                bookRef.getBook().getCopyRight().toString(),
+                bookRef.getBook().getCopyRight() != null ? bookRef.getBook().getCopyRight().toString() : "N/A",
                 bookRef.getBook().getLanguage(),
-                bookRef.getBook().getBookCatalog().getSection().getLocation().getName(),
                 bookRef.getStatus());
     }
 

@@ -65,6 +65,27 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    public BookDTO fetchBookByID(int book_id) {
+        Books book = bookRepository.findById(book_id)
+                .orElseThrow(() -> new ResourceNotFoundException("Book not found with id " + book_id));
+
+        BookDTO bookDTO = BookMapper.mapToBookDTO(book);
+
+        return bookDTO;
+    }
+
+    @Override
+    public BookDTO fetchBookByAccessionNumber(String accessionNumber) {
+        Books book = bookRepository.findByAccessionNumber(accessionNumber)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Book not found with accession number " + accessionNumber));
+
+        BookDTO bookDTO = BookMapper.mapToBookDTO(book);
+
+        return bookDTO;
+    }
+
+    @Override
     public List<Books> saveBook(BookDTO bookDTO) {
         validateBookDTO(bookDTO);
 
@@ -472,5 +493,4 @@ public class BookServiceImpl implements BookService {
         }
         return "";
     }
-
 }

@@ -51,6 +51,10 @@ public class EmailService {
                     followUpMessage = "Please note your new due date.";
                     break;
                 case "Reserved":
+                    actionMessage = "You have successfully reserved the book:";
+                    followUpMessage = "You will be notified via email once the book becomes available.y";
+                    break;
+                case "Notify":
                     actionMessage = "The book you reserved is now available for pickup:";
                     followUpMessage = "Please visit the library to collect your book.";
                     break;

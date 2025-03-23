@@ -1,5 +1,7 @@
 package com.university.librarymanagementsystem.dto.curriculum;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
@@ -22,10 +24,10 @@ public class BookReferenceDTO {
     // @JsonProperty("books_id")
     private int book_id;
     private String book_name;
+    private List<String> authors;
     private String isbn10;
     private String isbn13;
     private String copyright;
     private String language;
-    private String location;
     private int status;
 }

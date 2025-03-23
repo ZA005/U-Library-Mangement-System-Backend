@@ -197,4 +197,31 @@ public class BookController {
         }
     }
 
+    @GetMapping("/adminuser/book/{book_id}")
+    public ResponseEntity<BookDTO> getBookById(@PathVariable int book_id) {
+        try {
+            // Fetch the book using the service method
+            BookDTO bookDTO = bookService.fetchBookByID(book_id);
+
+            // Return the DTO wrapped in a ResponseEntity with HTTP 200 status
+            return new ResponseEntity<>(bookDTO, HttpStatus.OK);
+        } catch (Exception e) {
+            // Return HTTP 404 if the book is not found or any other error occurs
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/adminuser/book/accession/{accession_number}")
+    public ResponseEntity<BookDTO> getBookByAccessionNumber(@PathVariable String accession_number) {
+        try {
+            // Fetch the book using the service method
+            BookDTO bookDTO = bookService.fetchBookByAccessionNumber(accession_number);
+
+            // Return the DTO wrapped in a ResponseEntity with HTTP 200 status
+            return new ResponseEntity<>(bookDTO, HttpStatus.OK);
+        } catch (Exception e) {
+            // Return HTTP 404 if the book is not found or any other error occurs
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+    }
 }

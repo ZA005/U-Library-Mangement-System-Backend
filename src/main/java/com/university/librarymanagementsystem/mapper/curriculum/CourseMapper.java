@@ -20,7 +20,8 @@ public class CourseMapper {
                 course.getCourse_code(),
                 course.getCourse_name(),
                 course.getYear_level(),
-                course.getSem());
+                course.getSem(),
+                course.getMajor());
 
     }
 
@@ -34,7 +35,8 @@ public class CourseMapper {
                 courseDTO.getCourse_code(),
                 courseDTO.getCourse_name(),
                 courseDTO.getYear_level(),
-                courseDTO.getSem());
+                courseDTO.getSem(),
+                courseDTO.getMajor());
 
     }
 }

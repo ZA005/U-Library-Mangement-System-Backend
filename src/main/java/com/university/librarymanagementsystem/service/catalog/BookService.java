@@ -23,6 +23,10 @@ public interface BookService {
 
     List<BookDTO> fetchBookByIsbn13(String isbn13);
 
+    BookDTO fetchBookByID(int book_id);
+
+    BookDTO fetchBookByAccessionNumber(String accessionNumber);
+
     void weedBook(WeedInfoDTO weedInfoDTO);
 
     String generateCallNumber(String title, String category, List<String> authors,
