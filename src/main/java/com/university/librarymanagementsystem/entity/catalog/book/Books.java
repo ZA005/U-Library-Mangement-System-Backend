@@ -79,7 +79,7 @@ public class Books {
     private String publisher;
 
     @Column(name = "copyright", nullable = false)
-    private LocalDate copyRight;
+    private String copyRight;
 
     @Column(name = "print_type", nullable = false)
     private String printType;
