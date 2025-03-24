@@ -29,7 +29,7 @@ public class BookMapper {
                 book.getLanguage(),
                 book.getPublishedDate().toString(),
                 book.getPublisher(),
-                book.getCopyRight().toString(),
+                book.getCopyRight(),
                 book.getPrintType(),
                 book.getFormat(),
                 book.getStatus(),
@@ -51,7 +51,7 @@ public class BookMapper {
         book.setLanguage(bookDTO.getLanguage());
         book.setPublishedDate(LocalDate.parse(bookDTO.getPublishedDate()));
         book.setPublisher(bookDTO.getPublisher());
-        book.setCopyRight(LocalDate.parse(bookDTO.getCopyRight()));
+        book.setCopyRight(bookDTO.getCopyRight());
         book.setPrintType(bookDTO.getPrintType());
         book.setFormat(bookDTO.getFormat());
         book.setStatus(bookDTO.getStatus());

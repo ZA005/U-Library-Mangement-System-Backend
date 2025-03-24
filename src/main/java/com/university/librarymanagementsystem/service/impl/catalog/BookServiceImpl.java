@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.text.similarity.JaroWinklerSimilarity;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
@@ -68,9 +69,7 @@ public class BookServiceImpl implements BookService {
         Books book = bookRepository.findById(book_id)
                 .orElseThrow(() -> new ResourceNotFoundException("Book not found with id " + book_id));
 
-        BookDTO bookDTO = BookMapper.mapToBookDTO(book);
-
-        return bookDTO;
+        return BookMapper.mapToBookDTO(book);
     }
 
     @Override
@@ -79,9 +78,7 @@ public class BookServiceImpl implements BookService {
                 .orElseThrow(
                         () -> new ResourceNotFoundException("Book not found with accession number " + accessionNumber));
 
-        BookDTO bookDTO = BookMapper.mapToBookDTO(book);
-
-        return bookDTO;
+        return BookMapper.mapToBookDTO(book);
     }
 
     @Override
@@ -93,13 +90,13 @@ public class BookServiceImpl implements BookService {
 
         Section section = getSection(bookCatalogDTO.getSection().getId());
         Acquisition acquisition = getAcquisition(bookCatalogDTO.getAcquisitionDetails().getId());
-
+        acquisition.setStatus(1);
         int copies = getCopies(bookCatalogDTO);
         String baseAccessionNumber = bookDTO.getAccessionNumber();
         int startingCopyNumber = getStartingCopyNumber(bookDTO, baseAccessionNumber);
 
         BookCatalog catalog = saveBookCatalog(bookCatalogDTO, section, acquisition);
-
+        acquisitionRepository.save(acquisition);
         return saveBooks(bookDTO, catalog, copies, baseAccessionNumber, startingCopyNumber);
     }
 
@@ -232,8 +229,8 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public String generateCallNumber(String category, List<String> authors,
-            String publishedDate, String title) {
+    public String generateCallNumber(String title, String category, List<String> authors,
+            String publishedDate) {
         String classNumber = getClassNumber(category);
         String cutterNumber = generateCutterNumber(authors);
         String publicationYear = (publishedDate != null && !publishedDate.isEmpty())
@@ -402,12 +399,22 @@ public class BookServiceImpl implements BookService {
         return authors;
     }
 
-    private String getClassNumber(String category) {
-        if (category == null || category.trim().isEmpty()) {
-            return null;
+    public String getClassNumber(String category) {
+        List<Categories> allClassifications = categoryRepository.findAll();
+        JaroWinklerSimilarity similarity = new JaroWinklerSimilarity();
+        String bestMatchClassNumber = null;
+        double highestSimilarity = 0.0;
+
+        for (Categories classification : allClassifications) {
+            double similarityScore = similarity.apply(category.toLowerCase(),
+                    classification.getName().toLowerCase());
+            if (similarityScore > highestSimilarity) {
+                highestSimilarity = similarityScore;
+                bestMatchClassNumber = classification.getDdcCode();
+            }
         }
-        Categories bestMatch = categoryRepository.findBestMatchByName(category);
-        return bestMatch != null ? bestMatch.getDdcCode() : null;
+
+        return highestSimilarity >= 0.75 ? bestMatchClassNumber : null;
     }
 
     private String generateCutterNumber(List<String> authors) {
