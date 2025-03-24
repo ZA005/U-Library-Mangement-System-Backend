@@ -223,4 +223,15 @@ public class BookController {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
     }
+
+    @GetMapping("/adminuser/book/query/{query}")
+    public ResponseEntity<List<BookDTO>> getByBookBy4Query(@PathVariable String query) {
+        try {
+            List<BookDTO> books = bookService.fetchBy4Query(query);
+
+            return new ResponseEntity<>(books, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+    }
 }
