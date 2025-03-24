@@ -32,4 +32,5 @@ public interface BookService {
     String generateCallNumber(String title, String category, List<String> authors,
             String publishedDate);
 
+    List<BookDTO> fetchBy4Query(String query);
 }

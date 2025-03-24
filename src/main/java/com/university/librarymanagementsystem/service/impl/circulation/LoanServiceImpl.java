@@ -28,6 +28,7 @@ import com.university.librarymanagementsystem.repository.circulation.OverdueRepo
 import com.university.librarymanagementsystem.repository.circulation.ReservationRepository;
 import com.university.librarymanagementsystem.repository.circulation.TransactionRepository;
 import com.university.librarymanagementsystem.repository.user.AccountRepository;
+import com.university.librarymanagementsystem.repository.user.UserRepository;
 import com.university.librarymanagementsystem.service.circulation.LoanService;
 import com.university.librarymanagementsystem.service.user.EmailService;
 
@@ -44,6 +45,7 @@ public class LoanServiceImpl implements LoanService {
     private ReservationRepository reservationRepo;
     private TransactionRepository transactionRepo;
     private EmailService emailService;
+    private UserRepository userRepo;
 
     @Override
     public LoanDTO newLoan(LoanDTO loanDTO) {
@@ -55,6 +57,10 @@ public class LoanServiceImpl implements LoanService {
                 throw new IllegalStateException("Book is already loaned out");
             }
 
+            String email = userRepo.fetchEmailById(loanDTO.getUser_id());
+            System.out.println("USER: " + loanDTO.getUser_id());
+
+            System.out.println("EMAIL: " + email);
             // Ensure loanDate is set
             LocalDateTime loanDate = loanDTO.getLoanDate() != null ? loanDTO.getLoanDate() : LocalDateTime.now();
             LocalDateTime dueDate = loanDate.plusDays(1);
@@ -64,6 +70,7 @@ public class LoanServiceImpl implements LoanService {
 
             Loan loan = LoanMapper.mapToLoan(loanDTO);
             loan.setDueDate(dueDate);
+            loan.setStatus(LoanStatus.LOANED_OUT);
             Loan savedLoan = loanRepo.save(loan);
 
             book.setStatus(BookStatus.LOANED_OUT);
@@ -72,7 +79,7 @@ public class LoanServiceImpl implements LoanService {
             // Use null-safe handling to avoid null pointer exception
             String dueDateString = loanDTO.getDueDate() != null ? loanDTO.getDueDate().toString()
                     : "No due date assigned";
-            emailService.sendEmail(loanDTO.getEmail(), "Borrowed", book.getTitle(), dueDateString);
+            emailService.sendEmail(email, "Borrowed", book.getTitle(), dueDateString);
 
             TransactionHistory transaction = new TransactionHistory();
             transaction.setTransactionType(TransactionType.LOAN);
@@ -137,13 +144,20 @@ public class LoanServiceImpl implements LoanService {
                 overdueRepo.save(newOverdue);
             }
 
-            // Create and store a new transaction for overdue loans
-            TransactionHistory transaction = new TransactionHistory();
-            transaction.setTransactionType(TransactionType.OVERDUE);
-            transaction.setLoan(loan);
-            transaction.setTransactionDate(LocalDateTime.now());
+            // Check if a transaction for this overdue loan already exists
+            Optional<TransactionHistory> existingTransaction = transactionRepo.findByLoanAndTransactionType(
+                    loan.getId(),
+                    TransactionType.OVERDUE);
 
-            transactionRepo.save(transaction);
+            if (existingTransaction.isEmpty()) {
+                // Create and store a new transaction for overdue loans
+                TransactionHistory transaction = new TransactionHistory();
+                transaction.setTransactionType(TransactionType.OVERDUE);
+                transaction.setLoan(loan);
+                transaction.setTransactionDate(LocalDateTime.now());
+
+                transactionRepo.save(transaction);
+            }
         }
     }
 

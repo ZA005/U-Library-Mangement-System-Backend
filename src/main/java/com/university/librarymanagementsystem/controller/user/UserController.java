@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.university.librarymanagementsystem.dto.user.AccountDTO;
 import com.university.librarymanagementsystem.dto.user.OtpVerificationDTO;
 import com.university.librarymanagementsystem.dto.user.UserDTO;
+import com.university.librarymanagementsystem.service.user.AccountService;
 import com.university.librarymanagementsystem.service.user.OTPService;
 import com.university.librarymanagementsystem.service.user.UserService;
 
@@ -25,7 +27,7 @@ import lombok.AllArgsConstructor;
 public class UserController {
 
     private UserService service;
-
+    private AccountService accountService;
     private OTPService otp;
 
     @GetMapping("/verify/{id}")
@@ -81,5 +83,15 @@ public class UserController {
         }
 
         return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    @GetMapping("/public/account/{id}")
+    public ResponseEntity<AccountDTO> fetchAccount(@PathVariable("id") String user_id) {
+        AccountDTO account = accountService.fetchAccountByID(user_id);
+
+        if (account == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(account, HttpStatus.OK);
     }
 }
