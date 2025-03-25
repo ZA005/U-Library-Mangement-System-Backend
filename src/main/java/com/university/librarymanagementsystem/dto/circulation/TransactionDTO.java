@@ -26,6 +26,8 @@ public class TransactionDTO {
     private Integer reservation_id;
     private Integer fine_id;
 
+    private String user_id;
+
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime transDateTime;
 }
