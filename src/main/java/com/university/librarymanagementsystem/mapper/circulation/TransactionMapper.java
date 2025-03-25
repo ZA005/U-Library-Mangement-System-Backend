@@ -1,5 +1,7 @@
 package com.university.librarymanagementsystem.mapper.circulation;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Component;
 
 import com.university.librarymanagementsystem.entity.circulation.Reservation;
@@ -15,9 +17,9 @@ public class TransactionMapper {
         return new TransactionDTO(
                 transaction.getId(),
                 transaction.getTransactionType(),
-                transaction.getLoan().getId(),
-                transaction.getReservation().getId(),
-                transaction.getFine().getId(),
+                Optional.ofNullable(transaction.getLoan()).map(Loan::getId).orElse(null),
+                Optional.ofNullable(transaction.getReservation()).map(Reservation::getId).orElse(null),
+                Optional.ofNullable(transaction.getFine()).map(Fine::getId).orElse(null),
                 transaction.getTransactionDate());
     }
 
