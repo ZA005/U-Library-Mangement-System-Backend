@@ -137,13 +137,13 @@ public class FineServiceImpl implements FineService {
      * @return The computed fine amount.
      */
     private BigDecimal calculateFineAmount(long totalHours, long totalDays) {
-        // Calculate the fine based on hourly rate
-        BigDecimal hourlyFine = HOURLY_FINE_RATE.multiply(BigDecimal.valueOf(totalHours));
+        // Ensure totalHours does not double-count full days
+        long remainingHours = totalHours - (totalDays * 24);
 
-        // Calculate the fine based on daily rate
+        // Calculate the fine using daily and remaining hourly rates
         BigDecimal dailyFine = DAILY_FINE_RATE.multiply(BigDecimal.valueOf(totalDays));
+        BigDecimal hourlyFine = HOURLY_FINE_RATE.multiply(BigDecimal.valueOf(remainingHours));
 
-        // Return the total fine amount
-        return hourlyFine.add(dailyFine);
+        return dailyFine.add(hourlyFine);
     }
 }
