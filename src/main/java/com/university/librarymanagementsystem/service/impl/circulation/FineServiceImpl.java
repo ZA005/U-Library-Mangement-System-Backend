@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -101,8 +102,10 @@ public class FineServiceImpl implements FineService {
      * @throws UnsupportedOperationException since it's not yet implemented.
      */
     @Override
-    public List<Fine> getAllFines() {
-        throw new UnsupportedOperationException("Unimplemented method 'getAllFines'");
+    public List<FineDTO> getAllFines() {
+        List<Fine> fines = fineRepo.findAll();
+
+        return fines.stream().map((fine) -> FineMapper.mapToFineDTO(fine)).collect(Collectors.toList());
     }
 
     /**
