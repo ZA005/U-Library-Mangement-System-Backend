@@ -10,6 +10,8 @@ public interface FineService {
 
     List<FineDTO> getAllFines();
 
+    List<FineDTO> getAllNonPaidFines();
+
     Fine getFineByLoanId(int loanId);
 
     void markFineAsPaid(int fineId);

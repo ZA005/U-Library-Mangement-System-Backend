@@ -108,6 +108,13 @@ public class FineServiceImpl implements FineService {
         return fines.stream().map((fine) -> FineMapper.mapToFineDTO(fine)).collect(Collectors.toList());
     }
 
+    @Override
+    public List<FineDTO> getAllNonPaidFines() {
+        List<Fine> fines = fineRepo.findAllNonPaidFine();
+
+        return fines.stream().map((fine) -> FineMapper.mapToFineDTO(fine)).collect(Collectors.toList());
+    }
+
     /**
      * Retrieves a fine by loan ID.
      * 

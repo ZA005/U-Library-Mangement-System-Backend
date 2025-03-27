@@ -18,9 +18,16 @@ import lombok.AllArgsConstructor;
 public class FineController {
     private FineService service;
 
-    @GetMapping("/fineList")
+    @GetMapping("/fine/all")
     public ResponseEntity<List<FineDTO>> getAllFines() {
         List<FineDTO> fines = service.getAllFines();
+
+        return ResponseEntity.ok(fines);
+    }
+
+    @GetMapping("/fine/not-paid")
+    public ResponseEntity<List<FineDTO>> getAllNonPaid() {
+        List<FineDTO> fines = service.getAllNonPaidFines();
 
         return ResponseEntity.ok(fines);
     }
