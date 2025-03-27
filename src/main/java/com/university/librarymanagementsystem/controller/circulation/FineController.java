@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.university.librarymanagementsystem.dto.circulation.FineDTO;
-import com.university.librarymanagementsystem.entity.circulation.Fine;
 import com.university.librarymanagementsystem.service.circulation.FineService;
 
 import lombok.AllArgsConstructor;
@@ -35,10 +34,16 @@ public class FineController {
         return ResponseEntity.ok(fines);
     }
 
-    @PutMapping("fine/paid/{fineId}")
-    public ResponseEntity<String> markFineAsPaid(@PathVariable int fineId) {
-        service.markFineAsPaid(fineId);
-
-        return ResponseEntity.ok("Fine status updated successfully.");
+    @PutMapping("/fine/paid/{fineId}")
+    public ResponseEntity<?> markFineAsPaid(@PathVariable int fineId) {
+        try {
+            service.markFineAsPaid(fineId);
+            return ResponseEntity.ok("The fine has been successfully marked as paid.");
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
     }
+
 }
