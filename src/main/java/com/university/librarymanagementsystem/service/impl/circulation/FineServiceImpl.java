@@ -47,16 +47,17 @@ public class FineServiceImpl implements FineService {
     @Override
     public void markFineAsPaid(int fineId) {
         Optional<Fine> fine = fineRepo.findById(fineId);
-        System.out.println("FINE ID:" + fineId);
-        System.out.println("FINE:" + fine);
-
-        System.out.println("Exist:" + fine.isPresent());
-        LocalDateTime today = LocalDateTime.now();
 
         if (fine.isPresent()) {
-
             Fine objectFine = fine.get();
-            System.out.println("FINE DATE: " + objectFine.getFineDate());
+            Loan loan = objectFine.getLoan();
+
+            if (loan.getReturnDate() == null) {
+                throw new IllegalStateException(
+                        "You cannot mark this fine as paid because the book has not been returned yet. Please return the book first.");
+            }
+
+            LocalDateTime today = LocalDateTime.now();
             objectFine.setStatus((byte) 1);
             objectFine.setPaymentDate(today);
 
@@ -68,7 +69,8 @@ public class FineServiceImpl implements FineService {
             transaction.setTransactionDate(today);
 
             transactionRepo.save(transaction);
-
+        } else {
+            throw new IllegalArgumentException("The fine record you are trying to update does not exist.");
         }
     }
 
