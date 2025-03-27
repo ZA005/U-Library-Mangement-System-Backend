@@ -11,9 +11,14 @@ import org.springframework.stereotype.Component;
 public class FineMapper {
 
     public static FineDTO mapToFineDTO(Fine fine) {
+        String fullName = fine.getAccount().getUsers().getFirstName() + " " + fine.getAccount().getUsers().getLastName()
+                + " " + fine.getAccount().getUsers().getSuffix();
         return new FineDTO(
                 fine.getId(),
                 fine.getLoan().getId(),
+                fine.getLoan().getLoanDate(),
+                fine.getLoan().getDueDate(),
+                fullName,
                 fine.getAccount().getAccount_id(),
                 fine.getAccount().getUsername(),
                 fine.getFine_amount(),

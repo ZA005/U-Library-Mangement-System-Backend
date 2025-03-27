@@ -18,8 +18,15 @@ public class FineDTO {
 
     private int id;
 
+    // LOAN
     private int loan_id;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime loanDate;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime dueDate;
+    private String fullName;
 
+    // ACCOUNT
     private int account_id;
     private String user_id;
 

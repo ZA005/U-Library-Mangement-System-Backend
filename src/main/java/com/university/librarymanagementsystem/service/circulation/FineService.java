@@ -2,13 +2,15 @@ package com.university.librarymanagementsystem.service.circulation;
 
 import java.util.List;
 
+import com.university.librarymanagementsystem.dto.circulation.FineDTO;
 import com.university.librarymanagementsystem.entity.circulation.Fine;
-import com.university.librarymanagementsystem.entity.circulation.Loan;
 
 public interface FineService {
     void calculateFine();
 
-    List<Fine> getAllFines();
+    List<FineDTO> getAllFines();
+
+    List<FineDTO> getAllNonPaidFines();
 
     Fine getFineByLoanId(int loanId);
 
