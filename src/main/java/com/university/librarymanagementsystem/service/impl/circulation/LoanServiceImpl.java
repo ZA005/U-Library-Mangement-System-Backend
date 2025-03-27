@@ -101,6 +101,13 @@ public class LoanServiceImpl implements LoanService {
         return loans.stream().map((loan) -> LoanMapper.mapToLoanDTO(loan)).collect(Collectors.toList());
     }
 
+    @Override
+    public List<LoanDTO> getAllUnreturnLoans() {
+        List<Loan> loans = loanRepo.fetchAllUnreturnedLoans();
+
+        return loans.stream().map((loan) -> LoanMapper.mapToLoanDTO(loan)).collect(Collectors.toList());
+    }
+
     // AUTOMATICALLY UPDATE DATABASE WHEN A LOAN IS OVERDUE BY 1 SECOND
     @Scheduled(fixedRate = 60000)
     @Transactional

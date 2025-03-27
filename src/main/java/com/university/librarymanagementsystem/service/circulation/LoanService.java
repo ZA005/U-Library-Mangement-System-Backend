@@ -9,6 +9,8 @@ public interface LoanService {
 
     List<LoanDTO> getAllLoans();
 
+    List<LoanDTO> getAllUnreturnLoans();
+
     void checkAndUpdateOverdueLoans();
 
     void saveOverdueLoansToOverdueTable();
