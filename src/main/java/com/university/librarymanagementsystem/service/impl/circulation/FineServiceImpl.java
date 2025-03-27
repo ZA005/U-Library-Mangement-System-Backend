@@ -4,10 +4,13 @@ import com.university.librarymanagementsystem.dto.circulation.FineDTO;
 import com.university.librarymanagementsystem.entity.circulation.Fine;
 import com.university.librarymanagementsystem.entity.circulation.Loan;
 import com.university.librarymanagementsystem.entity.circulation.Overdue;
+import com.university.librarymanagementsystem.entity.circulation.TransactionHistory;
+import com.university.librarymanagementsystem.enums.TransactionType;
 import com.university.librarymanagementsystem.mapper.circulation.FineMapper;
 import com.university.librarymanagementsystem.repository.circulation.FineRepository;
 import com.university.librarymanagementsystem.repository.circulation.LoanRepository;
 import com.university.librarymanagementsystem.repository.circulation.OverdueRepository;
+import com.university.librarymanagementsystem.repository.circulation.TransactionRepository;
 import com.university.librarymanagementsystem.service.circulation.FineService;
 
 import jakarta.transaction.Transactional;
@@ -39,6 +42,35 @@ public class FineServiceImpl implements FineService {
     private LoanRepository loanRepo;
     private FineRepository fineRepo;
     private OverdueRepository overdueRepo;
+    private TransactionRepository transactionRepo;
+
+    @Override
+    public void markFineAsPaid(int fineId) {
+        Optional<Fine> fine = fineRepo.findById(fineId);
+        System.out.println("FINE ID:" + fineId);
+        System.out.println("FINE:" + fine);
+
+        System.out.println("Exist:" + fine.isPresent());
+        LocalDateTime today = LocalDateTime.now();
+
+        if (fine.isPresent()) {
+
+            Fine objectFine = fine.get();
+            System.out.println("FINE DATE: " + objectFine.getFineDate());
+            objectFine.setStatus((byte) 1);
+            objectFine.setPaymentDate(today);
+
+            fineRepo.save(objectFine);
+
+            TransactionHistory transaction = new TransactionHistory();
+            transaction.setTransactionType(TransactionType.FINE_PAYMENT);
+            transaction.setFine(objectFine);
+            transaction.setTransactionDate(today);
+
+            transactionRepo.save(transaction);
+
+        }
+    }
 
     /**
      * Scheduled method that runs every hour to calculate fines for overdue loans.
@@ -125,17 +157,6 @@ public class FineServiceImpl implements FineService {
     @Override
     public Fine getFineByLoanId(int loanId) {
         throw new UnsupportedOperationException("Unimplemented method 'getFineByLoanId'");
-    }
-
-    /**
-     * Marks a fine as paid by updating its status in the database.
-     * 
-     * @param fineId The ID of the fine to mark as paid.
-     * @throws UnsupportedOperationException since it's not yet implemented.
-     */
-    @Override
-    public void markFineAsPaid(int fineId) {
-        throw new UnsupportedOperationException("Unimplemented method 'markFineAsPaid'");
     }
 
     /**

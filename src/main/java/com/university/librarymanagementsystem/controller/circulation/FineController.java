@@ -4,10 +4,13 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.university.librarymanagementsystem.dto.circulation.FineDTO;
+import com.university.librarymanagementsystem.entity.circulation.Fine;
 import com.university.librarymanagementsystem.service.circulation.FineService;
 
 import lombok.AllArgsConstructor;
@@ -30,5 +33,12 @@ public class FineController {
         List<FineDTO> fines = service.getAllNonPaidFines();
 
         return ResponseEntity.ok(fines);
+    }
+
+    @PutMapping("fine/paid/{fineId}")
+    public ResponseEntity<String> markFineAsPaid(@PathVariable int fineId) {
+        service.markFineAsPaid(fineId);
+
+        return ResponseEntity.ok("Fine status updated successfully.");
     }
 }
