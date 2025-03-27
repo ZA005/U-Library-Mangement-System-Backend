@@ -45,6 +45,13 @@ public class LoanController {
         return ResponseEntity.ok(loans);
     }
 
+    @GetMapping("/unreturned")
+    public ResponseEntity<List<LoanDTO>> getAllUnreturnedLoan() {
+        List<LoanDTO> loans = loanService.getAllUnreturnLoans();
+
+        return ResponseEntity.ok(loans);
+    }
+
     @PostMapping("/return")
     public ResponseEntity<?> returnLoanItem(@RequestBody LoanDTO loanDTO) {
         try {

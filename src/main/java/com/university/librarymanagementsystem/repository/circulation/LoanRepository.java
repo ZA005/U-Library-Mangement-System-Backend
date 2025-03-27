@@ -17,6 +17,9 @@ public interface LoanRepository extends JpaRepository<Loan, Integer> {
     @Query(value = "SELECT * FROM loan WHERE status = 'OVERDUE'", nativeQuery = true)
     List<Loan> fetchAllOverdueLoans();
 
+    @Query(value = "SELECT * FROM loan WHERE status != 'RETURNED'", nativeQuery = true)
+    List<Loan> fetchAllUnreturnedLoans();
+
     @Query("SELECT l FROM Loan l WHERE l.account.account_id = :accountId AND l.dueDate = :dueDate")
     Optional<Loan> findByAccountIdAndDueDate(@Param("accountId") int accountId,
             @Param("dueDate") LocalDateTime dueDate);
