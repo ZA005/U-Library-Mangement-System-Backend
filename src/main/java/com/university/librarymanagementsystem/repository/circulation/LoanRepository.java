@@ -24,4 +24,21 @@ public interface LoanRepository extends JpaRepository<Loan, Integer> {
     Optional<Loan> findByAccountIdAndDueDate(@Param("accountId") int accountId,
             @Param("dueDate") LocalDateTime dueDate);
 
+    @Query(value = """
+            SELECT
+                CASE
+                    WHEN u.role = 'LIBRARIAN' AND
+                        (SELECT COUNT(*) FROM loan l WHERE l.account_id = a.account_id AND l.status = 'LOANED_OUT') >= 1
+                    THEN 0
+                    WHEN u.role = 'FACULTY' AND
+                        (SELECT COUNT(*) FROM loan l WHERE l.account_id = a.account_id AND l.status = 'LOANED_OUT') >= 5
+                    THEN 0
+                    ELSE 1
+                END
+            FROM accounts a
+            JOIN users u ON a.user_id = u.id
+            WHERE a.account_id = :accountId
+            """, nativeQuery = true)
+    Integer canBorrowBook(@Param("accountId") int accountId);
+
 }

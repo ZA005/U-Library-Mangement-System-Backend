@@ -73,10 +73,11 @@ public interface BookRepository extends JpaRepository<Books, Integer>, BookCusto
 	List<Books> findAllBooksUniqueOnly();
 
 	@Query(value = "SELECT * FROM books b " +
-			"WHERE b.title LIKE CONCAT('%', :query, '%') " +
+			"WHERE (b.title LIKE CONCAT('%', :query, '%') " +
 			"OR b.isbn10 LIKE CONCAT('%', :query, '%') " +
 			"OR b.isbn13 LIKE CONCAT('%', :query, '%') " +
-			"OR b.accession_number LIKE CONCAT('%', :query, '%')", nativeQuery = true)
+			"OR b.accession_number LIKE CONCAT('%', :query, '%')) " +
+			"AND b.status IN ('AVAILABLE', 'LOANED_OUT', 'RESERVED')", nativeQuery = true)
 	List<Books> searchBooksBy4Query(@Param("query") String query);
 
 }
