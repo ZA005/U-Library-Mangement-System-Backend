@@ -86,12 +86,32 @@ public class UserController {
     }
 
     @GetMapping("/public/account/{id}")
-    public ResponseEntity<AccountDTO> fetchAccount(@PathVariable("id") String user_id) {
-        AccountDTO account = accountService.fetchAccountByID(user_id);
+    public ResponseEntity<?> fetchAccount(@PathVariable("id") String user_id) {
+        try {
+            AccountDTO account = accountService.fetchAccountByID(user_id);
 
-        if (account == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            if (account == null) {
+                // Create a more structured error response
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("message", "Accound doesn't exists");
+                errorResponse.put("code", "ACCOUNT_NOT_FOUND");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+            }
+
+            return ResponseEntity.ok(account);
+        } catch (IllegalStateException ex) {
+            // Create a structured error response for borrowing limit
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", ex.getMessage());
+            errorResponse.put("code", "BORROWING_LIMIT_EXCEEDED");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        } catch (Exception ex) {
+            // Generic error handler for unexpected exceptions
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", "An unexpected error occurred");
+            errorResponse.put("code", "INTERNAL_SERVER_ERROR");
+            errorResponse.put("details", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
-        return new ResponseEntity<>(account, HttpStatus.OK);
     }
 }
