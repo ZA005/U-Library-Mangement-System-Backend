@@ -28,13 +28,19 @@ public class LoanController {
     public ResponseEntity<?> newLoan(@RequestBody LoanDTO loanDTO) {
         try {
             LoanDTO loan = loanService.newLoan(loanDTO);
+            if (loan == null) {
+                return new ResponseEntity<>("Loan creation failed", HttpStatus.BAD_REQUEST);
+            }
             return new ResponseEntity<>(loan, HttpStatus.CREATED);
         } catch (ResourceNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (IllegalStateException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return new ResponseEntity<>("An error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            e.printStackTrace();
+            return null;
+            // return new ResponseEntity<>("An error occurred: " + e.getMessage(),
+            // HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -56,6 +62,20 @@ public class LoanController {
     public ResponseEntity<?> returnLoanItem(@RequestBody LoanDTO loanDTO) {
         try {
             LoanDTO updatedLoan = loanService.returnLoanItem(loanDTO);
+            return new ResponseEntity<>(updatedLoan, HttpStatus.OK);
+        } catch (ResourceNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("An error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/renew")
+    public ResponseEntity<?> renewLoanItem(@RequestBody LoanDTO loanDTO) {
+        try {
+            LoanDTO updatedLoan = loanService.renewLoanItem(loanDTO);
             return new ResponseEntity<>(updatedLoan, HttpStatus.OK);
         } catch (ResourceNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);

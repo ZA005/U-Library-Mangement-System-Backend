@@ -10,8 +10,13 @@ import com.university.librarymanagementsystem.entity.user.Account;
 @Component
 public class LoanMapper {
     public static LoanDTO mapToLoanDTO(Loan loan) {
-        String fullName = loan.getAccount().getUsers().getFirstName() + " " + loan.getAccount().getUsers().getLastName()
-                + " " + loan.getAccount().getUsers().getSuffix();
+        String fullName = "";
+
+        if (loan.getAccount() != null && loan.getAccount().getUsers() != null) {
+            fullName = loan.getAccount().getUsers().getFirstName() + " " +
+                    loan.getAccount().getUsers().getLastName() + " " +
+                    (loan.getAccount().getUsers().getSuffix() != null ? loan.getAccount().getUsers().getSuffix() : "");
+        }
         return new LoanDTO(
                 loan.getId(),
                 loan.getBook().getId(),
@@ -20,7 +25,7 @@ public class LoanMapper {
                 loan.getAccount().getAccount_id(),
                 loan.getAccount().getUsers() != null ? loan.getAccount().getUsers().getId() : null,
                 loan.getAccount().getUsers() != null ? loan.getAccount().getUsers().getEmailAdd() : null,
-                fullName,
+                fullName.isBlank() ? "Unknown" : fullName,
                 loan.getAccount().getUsers() != null ? loan.getAccount().getUsers().getSuffix() : null,
                 loan.getAccount().getRole(),
                 loan.getLoanDate(),

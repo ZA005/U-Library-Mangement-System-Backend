@@ -76,10 +76,13 @@ public class LoanServiceImpl implements LoanService {
             book.setStatus(BookStatus.LOANED_OUT);
             bookRepo.save(book);
 
-            // Use null-safe handling to avoid null pointer exception
             String dueDateString = loanDTO.getDueDate() != null ? loanDTO.getDueDate().toString()
                     : "No due date assigned";
-            emailService.sendEmail(email, "Borrowed", book.getTitle(), dueDateString);
+            try {
+                emailService.sendEmail(email, "Borrowed", book.getTitle(), dueDateString);
+            } catch (Exception e) {
+                System.err.println("Email sending failed: " + e.getMessage());
+            }
 
             TransactionHistory transaction = new TransactionHistory();
             transaction.setTransactionType(TransactionType.LOAN);
