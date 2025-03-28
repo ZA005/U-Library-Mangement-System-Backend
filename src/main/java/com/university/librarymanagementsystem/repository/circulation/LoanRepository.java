@@ -27,7 +27,7 @@ public interface LoanRepository extends JpaRepository<Loan, Integer> {
     @Query(value = """
             SELECT
                 CASE
-                    WHEN u.role = 'LIBRARIAN' AND
+                    WHEN u.role = 'STUDENT' AND
                         (SELECT COUNT(*) FROM loan l WHERE l.account_id = a.account_id AND l.status = 'LOANED_OUT') >= 1
                     THEN 0
                     WHEN u.role = 'FACULTY' AND

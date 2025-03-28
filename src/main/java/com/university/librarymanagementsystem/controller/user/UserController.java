@@ -93,7 +93,7 @@ public class UserController {
             if (account == null) {
                 // Create a more structured error response
                 Map<String, String> errorResponse = new HashMap<>();
-                errorResponse.put("message", "Account not found");
+                errorResponse.put("message", "Accound doesn't exists");
                 errorResponse.put("code", "ACCOUNT_NOT_FOUND");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
             }

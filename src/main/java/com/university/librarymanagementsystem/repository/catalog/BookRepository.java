@@ -77,7 +77,7 @@ public interface BookRepository extends JpaRepository<Books, Integer>, BookCusto
 			"OR b.isbn10 LIKE CONCAT('%', :query, '%') " +
 			"OR b.isbn13 LIKE CONCAT('%', :query, '%') " +
 			"OR b.accession_number LIKE CONCAT('%', :query, '%')) " +
-			"AND b.status IN ('AVAILABLE', 'LOANED_OUT', 'RESERVED')", nativeQuery = true)
+			"AND b.status = 'AVAILABLE'", nativeQuery = true)
 	List<Books> searchBooksBy4Query(@Param("query") String query);
 
 }
