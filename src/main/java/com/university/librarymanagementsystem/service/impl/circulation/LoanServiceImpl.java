@@ -185,43 +185,53 @@ public class LoanServiceImpl implements LoanService {
 
         // Update Overdue entity if overdue
         Optional<Overdue> overdueOpt = overdueRepo.findByAccountAndDueDate(loan.getAccount(), loan.getDueDate());
-        if (overdueOpt.isPresent()) {
-            Overdue overdue = overdueOpt.get();
+        overdueOpt.ifPresent(overdue -> {
             overdue.setReturnedDate(now);
-
-            // Recalculate overdue duration
             Duration overdueDuration = Duration.between(overdue.getDueDate(), now);
             overdue.setTotalHoursOverdue(overdueDuration.toHours());
             overdue.setTotalDaysOverdue(overdueDuration.toDays());
-
             overdueRepo.save(overdue);
-        }
+        });
 
-        // Update Book status
+        // Get the book being returned
         Books book = loan.getBook();
 
-        // Check if the book is reserved
+        // Check if there is a pending reservation
         Optional<Reservation> nextReservation = reservationRepo.findFirstByBookAndStatusOrderByReservationDateAsc(
                 book, ReservationStatus.PENDING);
 
         if (nextReservation.isPresent()) {
-            // Notify the next borrower
+
+            // Explicitly mark the book as available before processing the reservation
+            book.setStatus(BookStatus.AVAILABLE);
+            bookRepo.save(book);
+
+            // Fetch the next borrower
             Reservation reservation = nextReservation.get();
             Account nextBorrower = reservation.getAccount();
-            emailService.sendEmail(
-                    nextBorrower.getUsers().getEmailAdd(),
-                    "Notify",
-                    book.getTitle(),
-                    reservation.getExpirationDate().toString());
 
-            // Update reservation status to NOTIFIED
-            reservation.setStatus(ReservationStatus.NOTIFIED);
+            // Create a new loan for the reserved book
+            LoanDTO newLoanDTO = new LoanDTO();
+
+            newLoanDTO.setBook_id(book.getId());
+            newLoanDTO.setBook_accession_no(book.getAccessionNumber());
+            newLoanDTO.setBook_title(book.getTitle());
+            newLoanDTO.setAccount_id(nextBorrower.getAccount_id());
+            newLoanDTO.setUser_id(nextBorrower.getUsername());
+            newLoanDTO.setLoanDate(now);
+
+            // Auto-loan the book
+            LoanDTO createdLoan = newLoan(newLoanDTO);
+
+            // Mark reservation as fulfilled
+            reservation.setStatus(ReservationStatus.APPROVED);
             reservationRepo.save(reservation);
 
-            // Keep book status as RESERVED since it's reserved for the next borrower
-            book.setStatus(BookStatus.RESERVED);
+            // Notify the next borrower
+            emailService.sendEmail(nextBorrower.getUsers().getEmailAdd(), "Notify", book.getTitle(),
+                    createdLoan.getDueDate().toString());
         } else {
-            // No reservation, mark the book as AVAILABLE
+            // No reservation, mark the book as available
             book.setStatus(BookStatus.AVAILABLE);
         }
 
@@ -234,8 +244,8 @@ public class LoanServiceImpl implements LoanService {
         transaction.setTransactionDate(now);
         transactionRepo.save(transaction);
 
-        // Send email notification to the returning borrower
-        emailService.sendEmail(loanDTO.getEmail(), "Returned",
+        // Notify the returning borrower
+        emailService.sendEmail(loanDTO.getEmail(), "Book Returned",
                 "You have successfully returned the book: " + book.getTitle(),
                 loanDTO.getDueDate().toString());
 
