@@ -21,7 +21,7 @@ public class TransactionImpl implements TransactionService {
 
     @Override
     public List<TransactionDTO> getTransactionHistory() {
-        List<TransactionHistory> transactionHistory = transactionRepo.findAll();
+        List<TransactionHistory> transactionHistory = transactionRepo.findAllByOrderByIdDesc();
 
         return transactionHistory.stream().map((transactions) -> TransactionMapper.mapToTransactionDTO(transactions))
                 .collect(Collectors.toList());

@@ -1,5 +1,6 @@
 package com.university.librarymanagementsystem.repository.circulation;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,5 +14,7 @@ public interface TransactionRepository extends JpaRepository<TransactionHistory,
     @Query("SELECT t FROM TransactionHistory t WHERE t.loan.id = :id AND t.transactionType = :transactionType")
     Optional<TransactionHistory> findByLoanAndTransactionType(@Param("id") Integer id,
             @Param("transactionType") TransactionType transactionType);
+
+    List<TransactionHistory> findAllByOrderByIdDesc();
 
 }
