@@ -4,6 +4,7 @@ import com.university.librarymanagementsystem.dto.circulation.ReservationDTO;
 import com.university.librarymanagementsystem.entity.catalog.book.Books;
 import com.university.librarymanagementsystem.entity.circulation.Reservation;
 import com.university.librarymanagementsystem.entity.user.Account;
+import com.university.librarymanagementsystem.enums.BookStatus;
 import com.university.librarymanagementsystem.enums.ReservationStatus;
 import com.university.librarymanagementsystem.mapper.circulation.ReservationMapper;
 import com.university.librarymanagementsystem.repository.catalog.BookRepository;
@@ -38,6 +39,12 @@ public class ReservationServiceImpl implements ReservationService {
     public ReservationDTO createReservation(ReservationDTO reservationDTO) {
         Books book = bookRepository.findById(reservationDTO.getBook_id())
                 .orElseThrow(() -> new EntityNotFoundException("Book not found"));
+        System.out.println("STATUS: " + book.getStatus());
+
+        if (BookStatus.LOANED_OUT.equals(book.getStatus())) {
+            throw new IllegalStateException(
+                    "This book is currently available. Please proceed with borrowing it instead of reserving.");
+        }
 
         Account account = accountRepository.findById(reservationDTO.getAccount_id())
                 .orElseThrow(() -> new EntityNotFoundException("Account not found"));

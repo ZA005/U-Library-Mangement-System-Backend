@@ -13,6 +13,8 @@ public class ReservationMapper {
         return new ReservationDTO(
                 reservation.getId(),
                 reservation.getBook().getId(),
+                reservation.getBook().getTitle(),
+                reservation.getBook().getAccessionNumber(),
                 reservation.getAccount().getAccount_id(),
                 reservation.getAccount().getUsername(),
                 reservation.getReservationDate(),
