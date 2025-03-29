@@ -32,7 +32,9 @@ public class EmailService {
             if ("Borrowed".equalsIgnoreCase(action) || "Renewed".equalsIgnoreCase(action)) {
                 dueDateSection = "<p><strong>Due Date:</strong> " + dueDate + "</p>";
             }
-
+            if ("Reserved".equalsIgnoreCase(action)) {
+                dueDateSection = "<p><strong>Expiration Date:</strong> " + dueDate + "</p>";
+            }
             // Define action message
             String actionMessage;
             String followUpMessage;
