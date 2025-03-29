@@ -20,6 +20,8 @@ public class ReservationDTO {
     private int id;
 
     private int book_id;
+    private String book_title;
+    private String book_accession_no;
 
     private int account_id;
     private String user_id;
