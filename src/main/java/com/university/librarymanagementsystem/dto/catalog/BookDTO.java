@@ -24,6 +24,7 @@ public class BookDTO {
     private List<String> authors;
     private String isbn10;
     private String isbn13;
+    private String categories;
     private String description;
     private int pages;
     private String thumbnail;
