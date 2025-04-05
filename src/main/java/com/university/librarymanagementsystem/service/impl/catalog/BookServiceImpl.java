@@ -282,7 +282,7 @@ public class BookServiceImpl implements BookService {
                 } catch (NumberFormatException e) {
                     maxNumericPart = 0;
                 }
-                return locationCodeName + "-" + String.format("%06d", maxNumericPart + 1);
+                return locationCodeName + "-" + String.format("%05d", maxNumericPart + 1);
             } else {
                 return locationCodeName + "-00001";
             }
