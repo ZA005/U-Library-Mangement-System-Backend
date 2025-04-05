@@ -1,8 +1,7 @@
 package com.university.librarymanagementsystem.service.user;
 
-import org.springframework.stereotype.Service;
+import com.university.librarymanagementsystem.dto.user.AccountDTO;
 
-@Service
-public class AccountService {
-
+public interface AccountService {
+    AccountDTO fetchAccountByID(String user_id);
 }

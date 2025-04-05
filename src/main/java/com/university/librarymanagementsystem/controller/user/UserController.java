@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.university.librarymanagementsystem.dto.user.AccountDTO;
 import com.university.librarymanagementsystem.dto.user.OtpVerificationDTO;
 import com.university.librarymanagementsystem.dto.user.UserDTO;
+import com.university.librarymanagementsystem.service.user.AccountService;
 import com.university.librarymanagementsystem.service.user.OTPService;
 import com.university.librarymanagementsystem.service.user.UserService;
 
@@ -25,7 +27,7 @@ import lombok.AllArgsConstructor;
 public class UserController {
 
     private UserService service;
-
+    private AccountService accountService;
     private OTPService otp;
 
     @GetMapping("/verify/{id}")
@@ -81,5 +83,35 @@ public class UserController {
         }
 
         return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    @GetMapping("/public/account/{id}")
+    public ResponseEntity<?> fetchAccount(@PathVariable("id") String user_id) {
+        try {
+            AccountDTO account = accountService.fetchAccountByID(user_id);
+
+            if (account == null) {
+                // Create a more structured error response
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("message", "Accound doesn't exists");
+                errorResponse.put("code", "ACCOUNT_NOT_FOUND");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+            }
+
+            return ResponseEntity.ok(account);
+        } catch (IllegalStateException ex) {
+            // Create a structured error response for borrowing limit
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", ex.getMessage());
+            errorResponse.put("code", "BORROWING_LIMIT_EXCEEDED");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        } catch (Exception ex) {
+            // Generic error handler for unexpected exceptions
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", "An unexpected error occurred");
+            errorResponse.put("code", "INTERNAL_SERVER_ERROR");
+            errorResponse.put("details", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
     }
 }

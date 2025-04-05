@@ -1,7 +1,10 @@
 package com.university.librarymanagementsystem.controller.circulation;
 
 import com.university.librarymanagementsystem.dto.circulation.ReservationDTO;
+import com.university.librarymanagementsystem.exception.ResourceNotFoundException;
 import com.university.librarymanagementsystem.service.circulation.ReservationService;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,16 +14,25 @@ import java.util.List;
 @RequestMapping("/adminuser/reservations")
 public class ReservationController {
 
-    private final ReservationService reservationService;
+    private ReservationService reservationService;
 
     public ReservationController(ReservationService reservationService) {
         this.reservationService = reservationService;
     }
 
-    @PostMapping
-    public ResponseEntity<ReservationDTO> createReservation(@RequestBody ReservationDTO reservationDTO) {
-        ReservationDTO createdReservation = reservationService.createReservation(reservationDTO);
-        return ResponseEntity.ok(createdReservation);
+    @PostMapping("/add")
+    public ResponseEntity<?> createReservation(@RequestBody ReservationDTO reservationDTO) {
+        try {
+            ReservationDTO createdReservation = reservationService.createReservation(reservationDTO);
+            return new ResponseEntity<>(createdReservation, HttpStatus.OK);
+        } catch (ResourceNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("An error occurred: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("/{id}")
@@ -29,7 +41,7 @@ public class ReservationController {
         return ResponseEntity.ok(reservation);
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<ReservationDTO>> getAllReservations() {
         List<ReservationDTO> reservations = reservationService.getAllReservations();
         return ResponseEntity.ok(reservations);

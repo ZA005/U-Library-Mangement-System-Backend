@@ -25,12 +25,10 @@ public class LoanDTO {
     private String book_title;
 
     // ACCOUNT
-    private int account_id;
+    private Integer account_id;
     private String user_id;
     private String email;
-    private String firstName;
-    private String middleName;
-    private String lastName;
+    private String fullname;
     private String suffix;
     private String role;
 

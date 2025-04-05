@@ -4,10 +4,13 @@ import com.university.librarymanagementsystem.dto.circulation.FineDTO;
 import com.university.librarymanagementsystem.entity.circulation.Fine;
 import com.university.librarymanagementsystem.entity.circulation.Loan;
 import com.university.librarymanagementsystem.entity.circulation.Overdue;
+import com.university.librarymanagementsystem.entity.circulation.TransactionHistory;
+import com.university.librarymanagementsystem.enums.TransactionType;
 import com.university.librarymanagementsystem.mapper.circulation.FineMapper;
 import com.university.librarymanagementsystem.repository.circulation.FineRepository;
 import com.university.librarymanagementsystem.repository.circulation.LoanRepository;
 import com.university.librarymanagementsystem.repository.circulation.OverdueRepository;
+import com.university.librarymanagementsystem.repository.circulation.TransactionRepository;
 import com.university.librarymanagementsystem.service.circulation.FineService;
 
 import jakarta.transaction.Transactional;
@@ -17,6 +20,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -38,6 +42,37 @@ public class FineServiceImpl implements FineService {
     private LoanRepository loanRepo;
     private FineRepository fineRepo;
     private OverdueRepository overdueRepo;
+    private TransactionRepository transactionRepo;
+
+    @Override
+    public void markFineAsPaid(int fineId) {
+        Optional<Fine> fine = fineRepo.findById(fineId);
+
+        if (fine.isPresent()) {
+            Fine objectFine = fine.get();
+            Loan loan = objectFine.getLoan();
+
+            if (loan.getReturnDate() == null) {
+                throw new IllegalStateException(
+                        "You cannot mark this fine as paid because the book has not been returned yet. Please return the book first.");
+            }
+
+            LocalDateTime today = LocalDateTime.now();
+            objectFine.setStatus((byte) 1);
+            objectFine.setPaymentDate(today);
+
+            fineRepo.save(objectFine);
+
+            TransactionHistory transaction = new TransactionHistory();
+            transaction.setTransactionType(TransactionType.FINE_PAYMENT);
+            transaction.setFine(objectFine);
+            transaction.setTransactionDate(today);
+
+            transactionRepo.save(transaction);
+        } else {
+            throw new IllegalArgumentException("The fine record you are trying to update does not exist.");
+        }
+    }
 
     /**
      * Scheduled method that runs every hour to calculate fines for overdue loans.
@@ -55,15 +90,20 @@ public class FineServiceImpl implements FineService {
         // Loop through each overdue record
         for (Overdue overdue : overdueLoans) {
             // Find the corresponding loan based on account ID and due date
-            Optional<Loan> loanOpt = loanRepo.findByAccountIdAndDueDate(
+            List<Loan> loans = loanRepo.findByAccountIdAndDueDate(
                     overdue.getAccount().getAccount_id(), overdue.getDueDate());
 
-            // If no matching loan is found, skip this iteration
-            if (loanOpt.isEmpty()) {
+            if (loans.isEmpty()) {
                 continue;
             }
 
-            Loan loan = loanOpt.get(); // Get the loan entity
+            if (loans.size() > 1) {
+                throw new IllegalStateException(
+                        String.format("Multiple loans found for accountId: %d and dueDate: %s",
+                                overdue.getAccount().getAccount_id(), overdue.getDueDate()));
+            }
+
+            Loan loan = loans.get(0); // Get the loan entity
 
             // Calculate total fine amount based on overdue duration
             BigDecimal totalFine = calculateFineAmount(overdue.getTotalHoursOverdue(), overdue.getTotalDaysOverdue());
@@ -101,8 +141,17 @@ public class FineServiceImpl implements FineService {
      * @throws UnsupportedOperationException since it's not yet implemented.
      */
     @Override
-    public List<Fine> getAllFines() {
-        throw new UnsupportedOperationException("Unimplemented method 'getAllFines'");
+    public List<FineDTO> getAllFines() {
+        List<Fine> fines = fineRepo.findAll();
+
+        return fines.stream().map((fine) -> FineMapper.mapToFineDTO(fine)).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FineDTO> getAllNonPaidFines() {
+        List<Fine> fines = fineRepo.findAllNonPaidFine();
+
+        return fines.stream().map((fine) -> FineMapper.mapToFineDTO(fine)).collect(Collectors.toList());
     }
 
     /**
@@ -118,17 +167,6 @@ public class FineServiceImpl implements FineService {
     }
 
     /**
-     * Marks a fine as paid by updating its status in the database.
-     * 
-     * @param fineId The ID of the fine to mark as paid.
-     * @throws UnsupportedOperationException since it's not yet implemented.
-     */
-    @Override
-    public void markFineAsPaid(int fineId) {
-        throw new UnsupportedOperationException("Unimplemented method 'markFineAsPaid'");
-    }
-
-    /**
      * Calculates the total fine amount based on the number of overdue hours and
      * days.
      * 
@@ -137,13 +175,13 @@ public class FineServiceImpl implements FineService {
      * @return The computed fine amount.
      */
     private BigDecimal calculateFineAmount(long totalHours, long totalDays) {
-        // Calculate the fine based on hourly rate
-        BigDecimal hourlyFine = HOURLY_FINE_RATE.multiply(BigDecimal.valueOf(totalHours));
+        // Ensure totalHours does not double-count full days
+        long remainingHours = totalHours - (totalDays * 24);
 
-        // Calculate the fine based on daily rate
+        // Calculate the fine using daily and remaining hourly rates
         BigDecimal dailyFine = DAILY_FINE_RATE.multiply(BigDecimal.valueOf(totalDays));
+        BigDecimal hourlyFine = HOURLY_FINE_RATE.multiply(BigDecimal.valueOf(remainingHours));
 
-        // Return the total fine amount
-        return hourlyFine.add(dailyFine);
+        return dailyFine.add(hourlyFine);
     }
 }

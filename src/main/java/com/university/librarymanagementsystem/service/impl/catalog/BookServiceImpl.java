@@ -154,6 +154,13 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    public List<BookDTO> fetchBy4Query(String query) {
+        List<Books> book = bookRepository.searchBooksBy4Query(query);
+
+        return book.stream().map((departments) -> BookMapper.mapToBookDTO(departments)).collect(Collectors.toList());
+    }
+
+    @Override
     public List<BookDTO> fetchBooksByAuthor(String authorName) {
         List<Books> books = bookRepository.findBooksByAuthorName(authorName);
         return filterActiveBooks(books).stream().map(BookMapper::mapToBookDTO).toList();
@@ -489,4 +496,5 @@ public class BookServiceImpl implements BookService {
         }
         return "";
     }
+
 }

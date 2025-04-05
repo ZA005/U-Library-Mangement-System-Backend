@@ -28,6 +28,7 @@ import com.university.librarymanagementsystem.repository.circulation.OverdueRepo
 import com.university.librarymanagementsystem.repository.circulation.ReservationRepository;
 import com.university.librarymanagementsystem.repository.circulation.TransactionRepository;
 import com.university.librarymanagementsystem.repository.user.AccountRepository;
+import com.university.librarymanagementsystem.repository.user.UserRepository;
 import com.university.librarymanagementsystem.service.circulation.LoanService;
 import com.university.librarymanagementsystem.service.user.EmailService;
 
@@ -41,13 +42,18 @@ public class LoanServiceImpl implements LoanService {
     private BookRepository bookRepo;
     private LoanRepository loanRepo;
     private OverdueRepository overdueRepo;
+    private AccountRepository accountRepo;
     private ReservationRepository reservationRepo;
     private TransactionRepository transactionRepo;
     private EmailService emailService;
+    private UserRepository userRepo;
 
     @Override
     public LoanDTO newLoan(LoanDTO loanDTO) {
         try {
+            Optional<Account> accountOpt = Optional.empty(); // Initialize accountOpt
+            Account account = null; // Ensure account is initialized
+
             Books book = bookRepo.findByAccessionNumber(loanDTO.getBook_accession_no())
                     .orElseThrow(() -> new ResourceNotFoundException("Book not found"));
 
@@ -55,6 +61,26 @@ public class LoanServiceImpl implements LoanService {
                 throw new IllegalStateException("Book is already loaned out");
             }
 
+            // Fetch and set account_id if not present
+            if (loanDTO.getAccount_id() == null) {
+                accountOpt = accountRepo.findByUserID(loanDTO.getUser_id());
+                account = accountOpt
+                        .orElseThrow(() -> new ResourceNotFoundException("Account not found for user"));
+                loanDTO.setAccount_id(account.getAccount_id());
+            } else {
+                // Fetch account even when account_id is present in the DTO
+                account = accountRepo.findById(loanDTO.getAccount_id())
+                        .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+            }
+
+            // Now safely call checkAccountLoan
+            if (!checkAccountLoan(account.getAccount_id())) {
+                throw new IllegalStateException("You have reached the borrowing limit and cannot borrow more books.");
+            }
+            String email = userRepo.fetchEmailById(loanDTO.getUser_id());
+            System.out.println("USER: " + loanDTO.getUser_id());
+
+            System.out.println("EMAIL: " + email);
             // Ensure loanDate is set
             LocalDateTime loanDate = loanDTO.getLoanDate() != null ? loanDTO.getLoanDate() : LocalDateTime.now();
             LocalDateTime dueDate = loanDate.plusDays(1);
@@ -64,15 +90,19 @@ public class LoanServiceImpl implements LoanService {
 
             Loan loan = LoanMapper.mapToLoan(loanDTO);
             loan.setDueDate(dueDate);
+            loan.setStatus(LoanStatus.LOANED_OUT);
             Loan savedLoan = loanRepo.save(loan);
 
             book.setStatus(BookStatus.LOANED_OUT);
             bookRepo.save(book);
 
-            // Use null-safe handling to avoid null pointer exception
             String dueDateString = loanDTO.getDueDate() != null ? loanDTO.getDueDate().toString()
                     : "No due date assigned";
-            emailService.sendEmail(loanDTO.getEmail(), "Borrowed", book.getTitle(), dueDateString);
+            try {
+                emailService.sendEmail(email, "Borrowed", book.getTitle(), dueDateString);
+            } catch (Exception e) {
+                System.err.println("Email sending failed: " + e.getMessage());
+            }
 
             TransactionHistory transaction = new TransactionHistory();
             transaction.setTransactionType(TransactionType.LOAN);
@@ -83,13 +113,20 @@ public class LoanServiceImpl implements LoanService {
 
             return LoanMapper.mapToLoanDTO(savedLoan);
         } catch (Exception e) {
-            throw new RuntimeException("Error processing loan request: " + e.getMessage(), e);
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 
     @Override
     public List<LoanDTO> getAllLoans() {
         List<Loan> loans = loanRepo.findAll();
+
+        return loans.stream().map((loan) -> LoanMapper.mapToLoanDTO(loan)).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<LoanDTO> getAllUnreturnLoans() {
+        List<Loan> loans = loanRepo.fetchAllUnreturnedLoans();
 
         return loans.stream().map((loan) -> LoanMapper.mapToLoanDTO(loan)).collect(Collectors.toList());
     }
@@ -137,13 +174,20 @@ public class LoanServiceImpl implements LoanService {
                 overdueRepo.save(newOverdue);
             }
 
-            // Create and store a new transaction for overdue loans
-            TransactionHistory transaction = new TransactionHistory();
-            transaction.setTransactionType(TransactionType.OVERDUE);
-            transaction.setLoan(loan);
-            transaction.setTransactionDate(LocalDateTime.now());
+            // Check if a transaction for this overdue loan already exists
+            Optional<TransactionHistory> existingTransaction = transactionRepo.findByLoanAndTransactionType(
+                    loan.getId(),
+                    TransactionType.OVERDUE);
 
-            transactionRepo.save(transaction);
+            if (existingTransaction.isEmpty()) {
+                // Create and store a new transaction for overdue loans
+                TransactionHistory transaction = new TransactionHistory();
+                transaction.setTransactionType(TransactionType.OVERDUE);
+                transaction.setLoan(loan);
+                transaction.setTransactionDate(LocalDateTime.now());
+
+                transactionRepo.save(transaction);
+            }
         }
     }
 
@@ -161,43 +205,53 @@ public class LoanServiceImpl implements LoanService {
 
         // Update Overdue entity if overdue
         Optional<Overdue> overdueOpt = overdueRepo.findByAccountAndDueDate(loan.getAccount(), loan.getDueDate());
-        if (overdueOpt.isPresent()) {
-            Overdue overdue = overdueOpt.get();
+        overdueOpt.ifPresent(overdue -> {
             overdue.setReturnedDate(now);
-
-            // Recalculate overdue duration
             Duration overdueDuration = Duration.between(overdue.getDueDate(), now);
             overdue.setTotalHoursOverdue(overdueDuration.toHours());
             overdue.setTotalDaysOverdue(overdueDuration.toDays());
-
             overdueRepo.save(overdue);
-        }
+        });
 
-        // Update Book status
+        // Get the book being returned
         Books book = loan.getBook();
 
-        // Check if the book is reserved
+        // Check if there is a pending reservation
         Optional<Reservation> nextReservation = reservationRepo.findFirstByBookAndStatusOrderByReservationDateAsc(
                 book, ReservationStatus.PENDING);
 
         if (nextReservation.isPresent()) {
-            // Notify the next borrower
+
+            // Explicitly mark the book as available before processing the reservation
+            book.setStatus(BookStatus.AVAILABLE);
+            bookRepo.save(book);
+
+            // Fetch the next borrower
             Reservation reservation = nextReservation.get();
             Account nextBorrower = reservation.getAccount();
-            emailService.sendEmail(
-                    nextBorrower.getUsers().getEmailAdd(),
-                    "Notify",
-                    book.getTitle(),
-                    reservation.getExpirationDate().toString());
 
-            // Update reservation status to NOTIFIED
-            reservation.setStatus(ReservationStatus.NOTIFIED);
+            // Create a new loan for the reserved book
+            LoanDTO newLoanDTO = new LoanDTO();
+
+            newLoanDTO.setBook_id(book.getId());
+            newLoanDTO.setBook_accession_no(book.getAccessionNumber());
+            newLoanDTO.setBook_title(book.getTitle());
+            newLoanDTO.setAccount_id(nextBorrower.getAccount_id());
+            newLoanDTO.setUser_id(nextBorrower.getUsername());
+            newLoanDTO.setLoanDate(now);
+
+            // Auto-loan the book
+            LoanDTO createdLoan = newLoan(newLoanDTO);
+
+            // Mark reservation as fulfilled
+            reservation.setStatus(ReservationStatus.APPROVED);
             reservationRepo.save(reservation);
 
-            // Keep book status as RESERVED since it's reserved for the next borrower
-            book.setStatus(BookStatus.RESERVED);
+            // Notify the next borrower
+            emailService.sendEmail(nextBorrower.getUsers().getEmailAdd(), "Notify", book.getTitle(),
+                    createdLoan.getDueDate().toString());
         } else {
-            // No reservation, mark the book as AVAILABLE
+            // No reservation, mark the book as available
             book.setStatus(BookStatus.AVAILABLE);
         }
 
@@ -210,8 +264,8 @@ public class LoanServiceImpl implements LoanService {
         transaction.setTransactionDate(now);
         transactionRepo.save(transaction);
 
-        // Send email notification to the returning borrower
-        emailService.sendEmail(loanDTO.getEmail(), "Returned",
+        // Notify the returning borrower
+        emailService.sendEmail(loanDTO.getEmail(), "Book Returned",
                 "You have successfully returned the book: " + book.getTitle(),
                 loanDTO.getDueDate().toString());
 
@@ -242,5 +296,10 @@ public class LoanServiceImpl implements LoanService {
         emailService.sendEmail(loanDTO.getEmail(), "Renewed", loan.getBook().getTitle(), newDueDate.toString());
 
         return LoanMapper.mapToLoanDTO(loan);
+    }
+
+    public boolean checkAccountLoan(Integer id) {
+        Integer result = loanRepo.canBorrowBook(id);
+        return result != null && result == 1;
     }
 }

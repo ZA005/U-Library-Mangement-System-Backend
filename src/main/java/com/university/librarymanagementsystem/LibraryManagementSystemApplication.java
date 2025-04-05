@@ -21,13 +21,14 @@ public class LibraryManagementSystemApplication {
 
 	public static void main(String[] args) {
 
-		Dotenv dotenv = Dotenv.load();
+		Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 
 		Properties props = System.getProperties();
 		props.setProperty("DB_URL", dotenv.get("DB_URL"));
 		props.setProperty("DB_USER", dotenv.get("DB_USER"));
 		props.setProperty("DB_PASSWORD", dotenv.get("DB_PASSWORD"));
 		props.setProperty("GOOGLE_BOOKS_API_KEY", dotenv.get("GOOGLE_BOOKS_API_KEY"));
+		props.setProperty("FRONTEND_URL", dotenv.get("FRONTEND_URL"));
 		props.setProperty("MAIL_PORT", dotenv.get("MAIL_PORT"));
 		props.setProperty("MAIL_USER", dotenv.get("MAIL_USER"));
 		props.setProperty("MAIL_PASSWORD", dotenv.get("MAIL_PASSWORD"));

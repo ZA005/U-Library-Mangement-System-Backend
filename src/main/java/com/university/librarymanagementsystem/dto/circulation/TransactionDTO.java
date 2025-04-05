@@ -22,9 +22,11 @@ public class TransactionDTO {
     @Enumerated(EnumType.STRING)
     private TransactionType type;
 
-    private int loan_id;
-    private int reservation_id;
-    private int fine_id;
+    private Integer loan_id;
+    private Integer reservation_id;
+    private Integer fine_id;
+
+    private String user_id;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime transDateTime;
