@@ -42,6 +42,7 @@ public class LoanServiceImpl implements LoanService {
     private BookRepository bookRepo;
     private LoanRepository loanRepo;
     private OverdueRepository overdueRepo;
+    private AccountRepository accountRepo;
     private ReservationRepository reservationRepo;
     private TransactionRepository transactionRepo;
     private EmailService emailService;
@@ -50,6 +51,9 @@ public class LoanServiceImpl implements LoanService {
     @Override
     public LoanDTO newLoan(LoanDTO loanDTO) {
         try {
+            Optional<Account> accountOpt = Optional.empty(); // Initialize accountOpt
+            Account account = null; // Ensure account is initialized
+
             Books book = bookRepo.findByAccessionNumber(loanDTO.getBook_accession_no())
                     .orElseThrow(() -> new ResourceNotFoundException("Book not found"));
 
@@ -57,6 +61,22 @@ public class LoanServiceImpl implements LoanService {
                 throw new IllegalStateException("Book is already loaned out");
             }
 
+            // Fetch and set account_id if not present
+            if (loanDTO.getAccount_id() == null) {
+                accountOpt = accountRepo.findByUserID(loanDTO.getUser_id());
+                account = accountOpt
+                        .orElseThrow(() -> new ResourceNotFoundException("Account not found for user"));
+                loanDTO.setAccount_id(account.getAccount_id());
+            } else {
+                // Fetch account even when account_id is present in the DTO
+                account = accountRepo.findById(loanDTO.getAccount_id())
+                        .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+            }
+
+            // Now safely call checkAccountLoan
+            if (!checkAccountLoan(account.getAccount_id())) {
+                throw new IllegalStateException("You have reached the borrowing limit and cannot borrow more books.");
+            }
             String email = userRepo.fetchEmailById(loanDTO.getUser_id());
             System.out.println("USER: " + loanDTO.getUser_id());
 
@@ -93,7 +113,7 @@ public class LoanServiceImpl implements LoanService {
 
             return LoanMapper.mapToLoanDTO(savedLoan);
         } catch (Exception e) {
-            throw new RuntimeException("Error processing loan request: " + e.getMessage(), e);
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 
@@ -276,5 +296,10 @@ public class LoanServiceImpl implements LoanService {
         emailService.sendEmail(loanDTO.getEmail(), "Renewed", loan.getBook().getTitle(), newDueDate.toString());
 
         return LoanMapper.mapToLoanDTO(loan);
+    }
+
+    public boolean checkAccountLoan(Integer id) {
+        Integer result = loanRepo.canBorrowBook(id);
+        return result != null && result == 1;
     }
 }

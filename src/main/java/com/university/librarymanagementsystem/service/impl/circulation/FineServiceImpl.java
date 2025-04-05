@@ -90,15 +90,20 @@ public class FineServiceImpl implements FineService {
         // Loop through each overdue record
         for (Overdue overdue : overdueLoans) {
             // Find the corresponding loan based on account ID and due date
-            Optional<Loan> loanOpt = loanRepo.findByAccountIdAndDueDate(
+            List<Loan> loans = loanRepo.findByAccountIdAndDueDate(
                     overdue.getAccount().getAccount_id(), overdue.getDueDate());
 
-            // If no matching loan is found, skip this iteration
-            if (loanOpt.isEmpty()) {
+            if (loans.isEmpty()) {
                 continue;
             }
 
-            Loan loan = loanOpt.get(); // Get the loan entity
+            if (loans.size() > 1) {
+                throw new IllegalStateException(
+                        String.format("Multiple loans found for accountId: %d and dueDate: %s",
+                                overdue.getAccount().getAccount_id(), overdue.getDueDate()));
+            }
+
+            Loan loan = loans.get(0); // Get the loan entity
 
             // Calculate total fine amount based on overdue duration
             BigDecimal totalFine = calculateFineAmount(overdue.getTotalHoursOverdue(), overdue.getTotalDaysOverdue());
