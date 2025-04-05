@@ -21,7 +21,7 @@ public interface LoanRepository extends JpaRepository<Loan, Integer> {
     List<Loan> fetchAllUnreturnedLoans();
 
     @Query("SELECT l FROM Loan l WHERE l.account.account_id = :accountId AND l.dueDate = :dueDate")
-    Optional<Loan> findByAccountIdAndDueDate(@Param("accountId") int accountId,
+    List<Loan> findByAccountIdAndDueDate(@Param("accountId") int accountId,
             @Param("dueDate") LocalDateTime dueDate);
 
     @Query(value = """
