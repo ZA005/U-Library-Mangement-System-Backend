@@ -9,6 +9,8 @@ import org.springframework.stereotype.Repository;
 import com.university.librarymanagementsystem.dto.catalog.BookSearchRequestDTO;
 import com.university.librarymanagementsystem.entity.catalog.Acquisition;
 import com.university.librarymanagementsystem.entity.catalog.BookCatalog;
+import com.university.librarymanagementsystem.entity.catalog.Location;
+import com.university.librarymanagementsystem.entity.catalog.Section;
 import com.university.librarymanagementsystem.entity.catalog.book.Author;
 import com.university.librarymanagementsystem.entity.catalog.book.Books;
 import com.university.librarymanagementsystem.entity.catalog.book.Categories;
@@ -17,9 +19,6 @@ import com.university.librarymanagementsystem.enums.BookStatus;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.*;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Root;
 
 @Repository
 public class BookCustomRepositoryImpl implements BookCustomRepository {
@@ -36,6 +35,8 @@ public class BookCustomRepositoryImpl implements BookCustomRepository {
         Join<Books, Author> author = book.join("authors", JoinType.LEFT);
         Join<Books, BookCatalog> catalog = book.join("bookCatalog", JoinType.LEFT);
         Join<BookCatalog, Acquisition> acquisition = catalog.join("acquisition", JoinType.LEFT);
+        Join<BookCatalog, Section> section = catalog.join("section", JoinType.LEFT);
+        Join<Section, Location> location = section.join("location", JoinType.LEFT);
 
         List<Predicate> predicates = new ArrayList<>();
 
@@ -140,6 +141,16 @@ public class BookCustomRepositoryImpl implements BookCustomRepository {
         if (Boolean.TRUE.equals(request.getIsAvailableOnly())) {
             predicates.add(cb.equal(book.get("status"), BookStatus.AVAILABLE));
             // AVAILABLE
+        }
+
+        // Location filter (individualLibrary)
+        if (request.getIndividualLibrary() != null && !request.getIndividualLibrary().equals("All libraries")) {
+            predicates.add(cb.equal(location.get("name"), request.getIndividualLibrary()));
+        }
+
+        // Sections filter
+        if (request.getSections() != null && !request.getSections().isEmpty()) {
+            predicates.add(section.get("sectionName").in(request.getSections()));
         }
 
         // Combine all predicates
