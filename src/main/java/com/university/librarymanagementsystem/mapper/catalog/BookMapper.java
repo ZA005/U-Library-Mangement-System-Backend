@@ -14,27 +14,29 @@ import com.university.librarymanagementsystem.entity.catalog.book.Books;
 public class BookMapper {
 
     public static BookDTO mapToBookDTO(Books book) {
-        return new BookDTO(
-                book.getId(),
-                book.getAccessionNumber(),
-                book.getTitle(),
-                book.getAuthors().stream().map(Author::getName).toList(),
-                book.getIsbn10(),
-                book.getIsbn13(),
-                book.getDescription(),
-                book.getPages(),
-                book.getThumbnail(),
-                book.getEdition(),
-                book.getSeries(),
-                book.getLanguage(),
-                book.getPublishedDate().toString(),
-                book.getPublisher(),
-                book.getCopyRight(),
-                book.getPrintType(),
-                book.getFormat(),
-                book.getStatus(),
-                book.getCondition(),
-                BookCatalogMapper.mapToBookCatalogDTO(book.getBookCatalog()));
+        BookDTO bookDTO = new BookDTO();
+        bookDTO.setId(book.getId());
+        bookDTO.setAccessionNumber(book.getAccessionNumber());
+        bookDTO.setTitle(book.getTitle());
+        bookDTO.setAuthors(book.getAuthors().stream().map(Author::getName).toList());
+        bookDTO.setIsbn10(book.getIsbn10());
+        bookDTO.setIsbn13(book.getIsbn13());
+        bookDTO.setCategories("");
+        bookDTO.setDescription(book.getDescription());
+        bookDTO.setPages(book.getPages());
+        bookDTO.setThumbnail(book.getThumbnail());
+        bookDTO.setEdition(book.getEdition());
+        bookDTO.setSeries(book.getSeries());
+        bookDTO.setLanguage(book.getLanguage());
+        bookDTO.setPublishedDate(book.getPublishedDate().toString());
+        bookDTO.setPublisher(book.getPublisher());
+        bookDTO.setCopyRight(book.getCopyRight());
+        bookDTO.setPrintType(book.getPrintType());
+        bookDTO.setFormat(book.getFormat());
+        bookDTO.setStatus(book.getStatus());
+        bookDTO.setCondition(book.getCondition());
+        bookDTO.setBookCatalog(BookCatalogMapper.mapToBookCatalogDTO(book.getBookCatalog()));
+        return bookDTO;
     }
 
     public static Books mapToBook(BookDTO bookDTO, BookCatalog bookCatalog) {

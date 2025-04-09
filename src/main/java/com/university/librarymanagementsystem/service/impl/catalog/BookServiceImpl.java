@@ -289,14 +289,14 @@ public class BookServiceImpl implements BookService {
                 } catch (NumberFormatException e) {
                     maxNumericPart = 0;
                 }
-                return locationCodeName + "-" + String.format("%06d", maxNumericPart + 1);
+                return locationCodeName + "-" + String.format("%05d", maxNumericPart + 1);
             } else {
-                return locationCodeName + "-000001";
+                return locationCodeName + "-00001";
             }
         }
 
-        // No existing books with this location code, start with 000001
-        return locationCodeName + "-000001";
+        // No existing books with this location code, start with 00001
+        return locationCodeName + "-00001";
     }
 
     private void validateBookDTO(BookDTO bookDTO) {
