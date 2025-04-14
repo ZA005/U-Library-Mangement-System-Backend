@@ -16,7 +16,7 @@ import com.university.librarymanagementsystem.service.catalog.WeedingProcessServ
 import com.university.librarymanagementsystem.service.catalog.WeedingStatusService;
 
 @RestController
-@RequestMapping("/adminuser/book/weeding")
+@RequestMapping("/admin/book/weeding")
 public class WeedingProcessController {
 
     private final WeedingProcessService weedingProcessService;
@@ -40,7 +40,6 @@ public class WeedingProcessController {
             return ResponseEntity.ok("Weeding process initiated");
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Error initiating weeding process");
-
         }
     }
 

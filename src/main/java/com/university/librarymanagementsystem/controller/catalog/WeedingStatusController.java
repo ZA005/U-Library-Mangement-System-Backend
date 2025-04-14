@@ -12,7 +12,7 @@ import com.university.librarymanagementsystem.dto.catalog.WeedInfoDTO;
 import com.university.librarymanagementsystem.service.catalog.WeedingStatusService;
 
 @RestController
-@RequestMapping("/adminuser/book/weed/status")
+@RequestMapping("/admin/book/weed/status")
 public class WeedingStatusController {
 
     private final WeedingStatusService weedStatusService;
