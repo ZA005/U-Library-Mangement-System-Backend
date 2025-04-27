@@ -27,4 +27,11 @@ public class TransactionImpl implements TransactionService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<TransactionDTO> getTransactionHistoryByUserId(String userId) {
+        List<TransactionHistory> transactionHistory = transactionRepo.findAllByUserId(userId);
+
+        return transactionHistory.stream().map((transactions) -> TransactionMapper.mapToTransactionDTO(transactions))
+                .collect(Collectors.toList());
+    }
 }
