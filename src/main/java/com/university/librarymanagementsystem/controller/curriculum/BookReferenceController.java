@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.university.librarymanagementsystem.dto.catalog.BookDTO;
@@ -85,6 +86,15 @@ public class BookReferenceController {
         } catch (RuntimeException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+    }
+
+    @GetMapping("/export")
+    public ResponseEntity<List<Object[]>> exportBookReferences(
+            @RequestParam("revisionNo") Integer revisionNo,
+            @RequestParam("programId") Integer programId) {
+
+        List<Object[]> exportedReferences = bookReferenceService.exportBookReferences(revisionNo, programId);
+        return new ResponseEntity<>(exportedReferences, HttpStatus.OK);
     }
 
     static class ErrorResponse {
