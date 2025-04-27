@@ -12,6 +12,8 @@ public interface FineService {
 
     List<FineDTO> getAllNonPaidFines();
 
+    Double getFineByUserId(String userId);
+
     Fine getFineByLoanId(int loanId);
 
     void markFineAsPaid(int fineId);
