@@ -130,4 +130,9 @@ public class BookReferenceServiceImpl implements BookReferenceService {
         bookRefRepository.deleteByCourseCodeAndBookName(subject.getCourse_code(), bookName);
     }
 
+    @Override
+    public List<Object[]> exportBookReferences(Integer revisionNo, Integer programId) {
+        return bookRefRepository.exportBookReferences(revisionNo, programId);
+    }
+
 }
