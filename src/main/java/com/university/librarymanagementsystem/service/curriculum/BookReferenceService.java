@@ -18,5 +18,7 @@ public interface BookReferenceService {
 
     List<BookDTO> getAllBooksNotReferenced(Integer courseId);
 
+    List<Object[]> exportBookReferences(Integer revisionNo, Integer programId);
+
     void removeBookRef(Integer bookRefId);
 }

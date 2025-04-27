@@ -16,25 +16,25 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/admin")
+// @RequestMapping("/admin")
 public class FineController {
     private FineService service;
 
-    @GetMapping("/fine/all")
+    @GetMapping("/admin/fine/all")
     public ResponseEntity<List<FineDTO>> getAllFines() {
         List<FineDTO> fines = service.getAllFines();
 
         return ResponseEntity.ok(fines);
     }
 
-    @GetMapping("/fine/not-paid")
+    @GetMapping("/admin/fine/not-paid")
     public ResponseEntity<List<FineDTO>> getAllNonPaid() {
         List<FineDTO> fines = service.getAllNonPaidFines();
 
         return ResponseEntity.ok(fines);
     }
 
-    @PutMapping("/fine/paid/{fineId}")
+    @PutMapping("/admin/fine/paid/{fineId}")
     public ResponseEntity<?> markFineAsPaid(@PathVariable int fineId) {
         try {
             service.markFineAsPaid(fineId);
@@ -46,4 +46,13 @@ public class FineController {
         }
     }
 
+    @GetMapping("public/fine/active/{userId}")
+    public ResponseEntity<?> getActiveFineByUserId(@PathVariable String userId) {
+        Double totalActiveFine = service.getFineByUserId(userId);
+
+        if (totalActiveFine == null || totalActiveFine == 0) {
+            return ResponseEntity.ok("No active fine found for this user.");
+        }
+        return ResponseEntity.ok(totalActiveFine);
+    }
 }

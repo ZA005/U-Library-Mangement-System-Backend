@@ -184,4 +184,9 @@ public class FineServiceImpl implements FineService {
 
         return dailyFine.add(hourlyFine);
     }
+
+    @Override
+    public Double getFineByUserId(String userId) {
+        return fineRepo.getTotalActiveFineByUserId(userId);
+    }
 }

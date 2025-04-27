@@ -40,9 +40,9 @@ public class SecurityConfig {
                                         "/adminuser/**")
                                 .permitAll()
                                 .requestMatchers("/admin/**", "/sru/**").hasAnyAuthority("LIBRARIAN", "ADMIN")
-                                .requestMatchers("/user/**").hasAnyAuthority("STUDENT")
+                                .requestMatchers("/user/**").hasAnyAuthority("STUDENT", "FACULTY")
                                 .requestMatchers("/adminuser/**").hasAnyAuthority("LIBRARIAN", "STUDENT",
-                                        "ADMIN")
+                                        "ADMIN", "PROGRAMHEAD", "FACULTY")
                                 .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(
