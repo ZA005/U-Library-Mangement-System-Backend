@@ -12,5 +12,5 @@ import lombok.Setter;
 public class BarcodeRequestDTO {
 
     private String accessionNumber;
-    private String barcode;
+    private String section;
 }
