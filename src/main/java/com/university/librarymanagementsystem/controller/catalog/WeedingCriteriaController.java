@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
-@RequestMapping("/adminuser/weeding-criteria")
+@RequestMapping("/admin/weeding-criteria")
 public class WeedingCriteriaController {
 
     private final WeedingCriteriaService weedingCriteriaService;
