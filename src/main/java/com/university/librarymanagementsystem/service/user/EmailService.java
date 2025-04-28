@@ -84,17 +84,30 @@ public class EmailService {
 
     @Async
     public void sendOTPEmail(String email, String otp) {
+        System.out.println("RUN5" + email);
+        System.out.println("RUN6" + otp);
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
+            System.out.println("RUN7");
+
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            System.out.println("RUN8");
 
             helper.setTo(email);
+            System.out.println("RUN9");
+
             helper.setSubject("University Library Management System - OTP Verification");
+            System.out.println("RUN10 ");
 
             String emailContent = OTP_EMAIL_TEMPLATE.replace("{{OTP_CODE}}", otp);
+            System.out.println("RUN11 ");
+
             helper.setText(emailContent, true);
+            System.out.println("RUN12 ");
 
             mailSender.send(mimeMessage);
+            System.out.println("RUN13 ");
+
         } catch (Exception e) {
             System.err.println("Failed to send OTP email: " + e.getMessage());
         }

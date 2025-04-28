@@ -28,7 +28,7 @@ public class User {
     private String middleName;
     @Column(name = "last_name", nullable = false)
     private String lastName;
-    @Column(name = "suffix", nullable = false)
+    @Column(name = "suffix")
     private String suffix;
     @Column(name = "role", nullable = false)
     private String role;
@@ -43,6 +43,6 @@ public class User {
 
     @Column(name = "department", nullable = false)
     private String department;
-    @Column(name = "program", nullable = false)
+    @Column(name = "program")
     private String program;
 }

@@ -24,8 +24,11 @@ public interface TransactionRepository extends JpaRepository<TransactionHistory,
                         +
                         "WHERE a.user_id = :userId " +
                         "ORDER BY t.id DESC", nativeQuery = true)
+
         List<TransactionHistory> findAllByUserId(@Param("userId") String userId);
 
         List<TransactionHistory> findAllByOrderByIdDesc();
 
+        @Query(value = "SELECT * FROM transaction_history WHERE transaction_type = :filter", nativeQuery = true)
+        List<TransactionHistory> findAllByType(@Param("filter") String filter);
 }
