@@ -7,5 +7,8 @@ import com.university.librarymanagementsystem.entity.catalog.Location;
 
 @Repository
 public interface LocationRepository extends JpaRepository<Location, Integer> {
+    boolean existsByCodeName(String codeName);
+
+    boolean existsByName(String name);
 
 }

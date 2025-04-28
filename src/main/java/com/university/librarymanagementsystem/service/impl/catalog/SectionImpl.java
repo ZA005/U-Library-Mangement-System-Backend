@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.university.librarymanagementsystem.dto.catalog.SectionDTO;
 import com.university.librarymanagementsystem.entity.catalog.Location;
 import com.university.librarymanagementsystem.entity.catalog.Section;
+import com.university.librarymanagementsystem.exception.DuplicateEntryException;
 import com.university.librarymanagementsystem.exception.ResourceNotFoundException;
 import com.university.librarymanagementsystem.mapper.catalog.SectionMapper;
 import com.university.librarymanagementsystem.repository.catalog.LocationRepository;
@@ -40,19 +41,27 @@ public class SectionImpl implements SectionService {
 
     @Override
     public SectionDTO addSection(SectionDTO sectionDTO) {
+        // Validate input
+        if (sectionDTO == null || sectionDTO.getSectionName() == null || sectionDTO.getLocation() == null
+                || sectionDTO.getLocation().getId() == null) {
+            throw new IllegalArgumentException("Section data is incomplete.");
+        }
+
         Section sec = SectionMapper.mapToSectionEntity(sectionDTO);
-        // Ensure that location is set before saving
+
         if (sec.getLocation() == null) {
             Location location = locationRepository.findById(sectionDTO.getLocation().getId())
-                    .orElseThrow(
-                            () -> new RuntimeException("Location not found with id: " + sectionDTO.getLocation()
-                                    .getId()));
+                    .orElseThrow(() -> new RuntimeException(
+                            "Location not found with id: " + sectionDTO.getLocation().getId()));
             sec.setLocation(location);
         }
-        if (sectionRepository.findBySectionNameAndLocation(sec.getSectionName(), sec.getLocation()) != null) {
-            throw new RuntimeException(
-                    "Section with name " + sec.getSectionName() + " already exists under the specified location");
+
+        if (sectionRepository.existsBySectionNameAndLocation(sec.getSectionName(), sec.getLocation())) {
+            throw new DuplicateEntryException(
+                    "A section with the name '" + sec.getSectionName() + "' already exists under the location '"
+                            + sec.getLocation().getName() + "'.");
         }
+
         sec = sectionRepository.save(sec);
         return SectionMapper.mapToSectionDTO(sec);
     }

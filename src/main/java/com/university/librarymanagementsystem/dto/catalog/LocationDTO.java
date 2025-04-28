@@ -11,7 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class LocationDTO {
 
-    private int id;
+    private Integer id;
     private String codeName;
     private String name;
     private Boolean status;
