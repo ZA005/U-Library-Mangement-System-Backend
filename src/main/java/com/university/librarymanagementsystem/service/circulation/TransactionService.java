@@ -9,4 +9,5 @@ public interface TransactionService {
 
     List<TransactionDTO> getTransactionHistoryByUserId(String userId);
 
+    List<TransactionDTO> getTransactionHistoryByFilter(String filter);
 }

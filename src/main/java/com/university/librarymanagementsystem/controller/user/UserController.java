@@ -38,10 +38,16 @@ public class UserController {
             if (user == null) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 404 if user not found
             }
+            System.out.println("RUN");
 
             String otpCode = otp.generateOTP();
+            System.out.println("RUN2");
+
             otp.storeOTP(user.getEmailAdd(), otpCode);
+            System.out.println("RUN3");
+
             otp.sendOTPEmail(user.getEmailAdd(), otpCode);
+            System.out.println("RUN4");
 
             // Return the user with a 200 OK status
             return new ResponseEntity<>(user, HttpStatus.OK);

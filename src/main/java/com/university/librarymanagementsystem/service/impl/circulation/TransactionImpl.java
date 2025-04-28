@@ -34,4 +34,12 @@ public class TransactionImpl implements TransactionService {
         return transactionHistory.stream().map((transactions) -> TransactionMapper.mapToTransactionDTO(transactions))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<TransactionDTO> getTransactionHistoryByFilter(String filter) {
+        List<TransactionHistory> transactionHistory = transactionRepo.findAllByType(filter);
+
+        return transactionHistory.stream().map((transactions) -> TransactionMapper.mapToTransactionDTO(transactions))
+                .collect(Collectors.toList());
+    }
 }

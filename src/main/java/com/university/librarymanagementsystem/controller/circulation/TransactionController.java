@@ -32,4 +32,11 @@ public class TransactionController {
 
         return ResponseEntity.ok(transactions);
     }
+
+    @GetMapping("/type/{type}")
+    public ResponseEntity<List<TransactionDTO>> getAllTransactionByType(@PathVariable String type) {
+        List<TransactionDTO> transactions = transactionService.getTransactionHistoryByFilter(type);
+
+        return ResponseEntity.ok(transactions);
+    }
 }
