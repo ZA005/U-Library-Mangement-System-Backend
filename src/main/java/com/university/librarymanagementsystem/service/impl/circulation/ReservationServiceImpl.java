@@ -13,6 +13,7 @@ import com.university.librarymanagementsystem.repository.catalog.BookRepository;
 import com.university.librarymanagementsystem.repository.circulation.ReservationRepository;
 import com.university.librarymanagementsystem.repository.circulation.TransactionRepository;
 import com.university.librarymanagementsystem.repository.user.AccountRepository;
+import com.university.librarymanagementsystem.repository.user.UserRepository;
 import com.university.librarymanagementsystem.service.circulation.ReservationService;
 import com.university.librarymanagementsystem.service.user.EmailService;
 
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +33,7 @@ public class ReservationServiceImpl implements ReservationService {
     private ReservationRepository reservationRepository;
     private BookRepository bookRepository;
     private AccountRepository accountRepository;
+    private UserRepository userRepository;
     private TransactionRepository transactionRepository;
     private EmailService emailService;
 
@@ -48,42 +51,56 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public ReservationDTO createReservation(ReservationDTO reservationDTO) {
-        Books book = bookRepository.findById(reservationDTO.getBook_id())
-                .orElseThrow(() -> new EntityNotFoundException("Book not found"));
-        System.out.println("STATUS: " + book.getStatus());
-
-        if (BookStatus.AVAILABLE.equals(book.getStatus())) {
-            throw new IllegalStateException(
-                    "This book is currently available. Please proceed with borrowing it instead of reserving.");
-        }
-
-        Account account = accountRepository.findById(reservationDTO.getAccount_id())
-                .orElseThrow(() -> new EntityNotFoundException("Account not found"));
-
-        Reservation reservation = new Reservation();
-        reservation.setBook(book);
-        reservation.setAccount(account);
-        reservation.setReservationDate(LocalDateTime.now());
-        reservation.setExpirationDate(LocalDateTime.now().plusDays(3)); // Default 3-day expiration
-        reservation.setStatus(ReservationStatus.PENDING);
-
-        Reservation savedReservation = reservationRepository.save(reservation);
-
-        TransactionHistory transaction = new TransactionHistory();
-
-        transaction.setTransactionType(TransactionType.RESERVATION);
-        transaction.setReservation(savedReservation);
-        transaction.setTransactionDate(LocalDateTime.now());
-
-        transactionRepository.save(transaction);
-
         try {
-            emailService.sendEmail(account.getUsers().getEmailAdd(), "Reserved", book.getTitle(),
-                    reservation.getExpirationDate().toString());
+            Optional<Account> accountOpt = Optional.empty();
+            Account account = null;
+
+            Books book = bookRepository.findById(reservationDTO.getBook_id())
+                    .orElseThrow(() -> new EntityNotFoundException("Book not found"));
+            System.out.println("STATUS: " + book.getStatus());
+
+            if (BookStatus.AVAILABLE.equals(book.getStatus())) {
+                throw new IllegalStateException(
+                        "This book is currently available. Please proceed with borrowing it instead of reserving.");
+            }
+
+            // Handle account_id if not provided
+            if (reservationDTO.getAccount_id() == null) {
+                accountOpt = accountRepository.findByUserID(reservationDTO.getUser_id());
+                account = accountOpt.orElseThrow(() -> new EntityNotFoundException("Account not found for user"));
+                reservationDTO.setAccount_id(account.getAccount_id());
+            } else {
+                account = accountRepository.findById(reservationDTO.getAccount_id())
+                        .orElseThrow(() -> new EntityNotFoundException("Account not found"));
+            }
+
+            Reservation reservation = new Reservation();
+            reservation.setBook(book);
+            reservation.setAccount(account);
+            reservation.setReservationDate(LocalDateTime.now());
+            reservation.setExpirationDate(LocalDateTime.now().plusDays(3)); // Default 3-day expiration
+            reservation.setStatus(ReservationStatus.PENDING);
+
+            Reservation savedReservation = reservationRepository.save(reservation);
+
+            TransactionHistory transaction = new TransactionHistory();
+            transaction.setTransactionType(TransactionType.RESERVATION);
+            transaction.setReservation(savedReservation);
+            transaction.setTransactionDate(LocalDateTime.now());
+
+            transactionRepository.save(transaction);
+
+            try {
+                emailService.sendEmail(account.getUsers().getEmailAdd(), "Reserved", book.getTitle(),
+                        reservation.getExpirationDate().toString());
+            } catch (Exception e) {
+                System.err.println("Email sending failed: " + e.getMessage());
+            }
+
+            return ReservationMapper.mapToReservationDTO(savedReservation);
         } catch (Exception e) {
-            System.err.println("Email sending failed: " + e.getMessage());
+            throw new RuntimeException(e.getMessage(), e);
         }
-        return ReservationMapper.mapToReservationDTO(savedReservation);
     }
 
     @Override
