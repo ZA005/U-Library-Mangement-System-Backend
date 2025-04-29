@@ -23,7 +23,7 @@ public class ReservationDTO {
     private String book_title;
     private String book_accession_no;
 
-    private int account_id;
+    private Integer account_id;
     private String user_id;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
