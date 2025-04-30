@@ -83,7 +83,8 @@ public class LoanServiceImpl implements LoanService {
             System.out.println("EMAIL: " + email);
             // Ensure loanDate is set
             LocalDateTime loanDate = loanDTO.getLoanDate() != null ? loanDTO.getLoanDate() : LocalDateTime.now();
-            LocalDateTime dueDate = loanDate.plusDays(1);
+            long loanDurationDays = "STUDENT".equalsIgnoreCase(account.getRole()) ? 1 : 30;
+            LocalDateTime dueDate = loanDate.plusDays(loanDurationDays);
 
             // Set dueDate in both DTO and entity
             loanDTO.setDueDate(dueDate);
