@@ -29,9 +29,10 @@ public class LocationImpl implements LocationService {
     @Override
     public LocationDTO addLocation(LocationDTO locDTO) {
         // Validate input
-        if (locDTO == null || locDTO.getCodeName() == null || locDTO.getName() == null) {
-            throw new IllegalArgumentException("Location data is incomplete.");
-        }
+        // if (locDTO == null || locDTO.getCodeName() == null || locDTO.getName() ==
+        // null) {
+        // throw new IllegalArgumentException("Location data is incomplete.");
+        // }
 
         // Check for duplicate codeName
         if (locationRepository.existsByCodeName(locDTO.getCodeName())) {

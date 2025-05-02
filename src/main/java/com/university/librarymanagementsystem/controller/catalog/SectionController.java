@@ -56,19 +56,18 @@ public class SectionController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> createLocation(@RequestBody LocationDTO locationDTO) {
+    public ResponseEntity<Object> createSection(@RequestBody SectionDTO sectionDTO) {
         try {
-            if (locationDTO == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Location data cannot be null"));
+            if (sectionDTO == null) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
-            LocationDTO createdLocation = locationService.addLocation(locationDTO);
-            return new ResponseEntity<>(createdLocation, HttpStatus.CREATED);
+            SectionDTO createdSection = sectionService.addSection(sectionDTO);
+            return new ResponseEntity<>(createdSection, HttpStatus.CREATED);
         } catch (DuplicateEntryException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Duplicate Location: " + e.getMessage()));
+            return ResponseEntity.badRequest().body("Duplicate Section: " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("Error creating location: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Internal server error: " + e.getMessage()));
+            System.err.println("Error creating section: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
