@@ -12,6 +12,7 @@ import com.university.librarymanagementsystem.repository.circulation.LoanReposit
 import com.university.librarymanagementsystem.repository.circulation.OverdueRepository;
 import com.university.librarymanagementsystem.repository.circulation.TransactionRepository;
 import com.university.librarymanagementsystem.service.circulation.FineService;
+import com.university.librarymanagementsystem.service.user.EmailService;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -43,6 +44,7 @@ public class FineServiceImpl implements FineService {
     private FineRepository fineRepo;
     private OverdueRepository overdueRepo;
     private TransactionRepository transactionRepo;
+    private EmailService emailService;
 
     @Override
     public void markFineAsPaid(int fineId) {
@@ -120,6 +122,12 @@ public class FineServiceImpl implements FineService {
                 }
                 fine.setFine_amount(totalFine);
                 fineRepo.save(fine);
+
+                String email = overdue.getAccount().getUsers().getEmailAdd();
+                String bookTitle = loan.getBook().getTitle();
+                String dueDate = overdue.getDueDate().toString();
+
+                emailService.sendEmail(email, "Overdue", bookTitle, dueDate);
             } else {
                 // Create a new fine entry in the database
                 Fine newFine = new Fine();
@@ -130,6 +138,11 @@ public class FineServiceImpl implements FineService {
                 newFine.setFineDate(LocalDateTime.now()); // Timestamp for when the fine was issued
 
                 fineRepo.save(newFine); // Save new fine entry
+                String email = overdue.getAccount().getUsers().getEmailAdd();
+                String bookTitle = loan.getBook().getTitle();
+                String dueDate = overdue.getDueDate().toString();
+
+                emailService.sendEmail(email, "Overdue", bookTitle, dueDate);
             }
         }
     }
