@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.university.librarymanagementsystem.dto.catalog.BookDTO;
 import com.university.librarymanagementsystem.dto.catalog.SRUFormData;
-import com.university.librarymanagementsystem.entity.catalog.book.Books;
 import com.university.librarymanagementsystem.service.catalog.GoogleBookService;
 
 import lombok.AllArgsConstructor;
