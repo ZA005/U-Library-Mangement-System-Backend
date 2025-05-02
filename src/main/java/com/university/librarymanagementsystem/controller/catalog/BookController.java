@@ -136,7 +136,7 @@ public class BookController {
         }
     }
 
-    @GetMapping("/adminuser/book/fetchAllNewlyAcquired")
+    @GetMapping("/public/book/fetchAllNewlyAcquired")
     public ResponseEntity<List<BookDTO>> fetchAllNewlyAcquiredBooks() {
         try {
             List<BookDTO> books = bookService.fetchNewlyAcquiredBooks();

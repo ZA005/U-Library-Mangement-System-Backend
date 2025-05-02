@@ -60,6 +60,14 @@ public class EmailService {
                     actionMessage = "The book you reserved is now available for pickup:";
                     followUpMessage = "Please visit the library to collect your book.";
                     break;
+                case "Overdue":
+                    actionMessage = "The following book is overdue:";
+                    dueDateSection = "<p><strong>Original Due Date:</strong> " + dueDate + "</p>";
+                    followUpMessage = """
+                            <span class="highlight">Your account may incur penalties or borrowing restrictions.</span><br>
+                            Please return the book immediately and settle any applicable fines.
+                            """;
+                    break;
                 default:
                     actionMessage = "This is a notification regarding your book:";
                     followUpMessage = "";
