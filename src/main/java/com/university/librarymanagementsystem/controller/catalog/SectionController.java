@@ -1,9 +1,11 @@
 package com.university.librarymanagementsystem.controller.catalog;
 
 import com.university.librarymanagementsystem.config.JWTAuthFilter;
+import com.university.librarymanagementsystem.dto.catalog.LocationDTO;
 import com.university.librarymanagementsystem.dto.catalog.SectionDTO;
 import com.university.librarymanagementsystem.entity.catalog.Section;
 import com.university.librarymanagementsystem.exception.DuplicateEntryException;
+import com.university.librarymanagementsystem.service.catalog.LocationService;
 import com.university.librarymanagementsystem.service.catalog.SectionService;
 
 import java.util.HashMap;
@@ -30,9 +32,13 @@ public class SectionController {
 
     private final SectionService sectionService;
 
-    public SectionController(SectionService sectionService, JWTAuthFilter JWTAuthFilter) {
+    private final LocationService locationService;
+
+    public SectionController(SectionService sectionService, JWTAuthFilter JWTAuthFilter,
+            LocationService locationService) {
         this.sectionService = sectionService;
         this.JWTAuthFilter = JWTAuthFilter;
+        this.locationService = locationService;
     }
 
     @GetMapping("/{locationId}")
@@ -50,18 +56,19 @@ public class SectionController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> createSection(@RequestBody SectionDTO sectionDTO) {
+    public ResponseEntity<Object> createLocation(@RequestBody LocationDTO locationDTO) {
         try {
-            if (sectionDTO == null) {
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            if (locationDTO == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Location data cannot be null"));
             }
-            SectionDTO createdSection = sectionService.addSection(sectionDTO);
-            return new ResponseEntity<>(createdSection, HttpStatus.CREATED);
+            LocationDTO createdLocation = locationService.addLocation(locationDTO);
+            return new ResponseEntity<>(createdLocation, HttpStatus.CREATED);
         } catch (DuplicateEntryException e) {
-            return ResponseEntity.badRequest().body("Duplicate Section: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", "Duplicate Location: " + e.getMessage()));
         } catch (Exception e) {
-            System.err.println("Error creating section: " + e.getMessage());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            System.err.println("Error creating location: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Internal server error: " + e.getMessage()));
         }
     }
 

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.university.librarymanagementsystem.dto.catalog.LocationDTO;
 import com.university.librarymanagementsystem.entity.catalog.Location;
+import com.university.librarymanagementsystem.exception.DuplicateEntryException;
 import com.university.librarymanagementsystem.exception.ResourceNotFoundException;
 import com.university.librarymanagementsystem.mapper.catalog.LocationMapper;
 import com.university.librarymanagementsystem.repository.catalog.LocationRepository;
@@ -27,11 +28,26 @@ public class LocationImpl implements LocationService {
 
     @Override
     public LocationDTO addLocation(LocationDTO locDTO) {
-        Location loc = LocationMapper.mapToLocationEntity(locDTO);
+        // Validate input
+        if (locDTO == null || locDTO.getCodeName() == null || locDTO.getName() == null) {
+            throw new IllegalArgumentException("Location data is incomplete.");
+        }
 
+        // Check for duplicate codeName
+        if (locationRepository.existsByCodeName(locDTO.getCodeName())) {
+            throw new DuplicateEntryException(
+                    "A location with the codeName '" + locDTO.getCodeName() + "' already exists.");
+        }
+
+        // Check for duplicate name
+        if (locationRepository.existsByName(locDTO.getName())) {
+            throw new DuplicateEntryException("A location with the name '" + locDTO.getName() + "' already exists.");
+        }
+
+        // Map DTO to entity and save
+        Location loc = LocationMapper.mapToLocationEntity(locDTO);
         loc = locationRepository.save(loc);
         return LocationMapper.mapToLocationDTO(loc);
-
     }
 
     @Override

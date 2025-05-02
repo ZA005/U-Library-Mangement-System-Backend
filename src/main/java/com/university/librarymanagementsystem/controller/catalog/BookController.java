@@ -1,8 +1,11 @@
 package com.university.librarymanagementsystem.controller.catalog;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.university.librarymanagementsystem.dto.catalog.BarcodeRequestDTO;
 import com.university.librarymanagementsystem.dto.catalog.BookDTO;
 import com.university.librarymanagementsystem.dto.catalog.BookSearchRequestDTO;
+import com.university.librarymanagementsystem.entity.catalog.BookCatalog;
 import com.university.librarymanagementsystem.entity.catalog.book.Books;
 import com.university.librarymanagementsystem.enums.BookStatus;
 import com.university.librarymanagementsystem.mapper.catalog.BookMapper;
+import com.university.librarymanagementsystem.repository.catalog.BookCatalogRepository;
 import com.university.librarymanagementsystem.repository.catalog.BookRepository;
 import com.university.librarymanagementsystem.service.catalog.BookService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,10 +32,13 @@ public class BookController {
 
     private BookService bookService;
     private BookRepository bookRepository;
+    private BookCatalogRepository bookCatalogRepository;
 
-    public BookController(BookService bookService, BookRepository bookRepository) {
+    public BookController(BookService bookService, BookRepository bookRepository,
+            BookCatalogRepository bookCatalogRepository) {
         this.bookService = bookService;
         this.bookRepository = bookRepository;
+        this.bookCatalogRepository = bookCatalogRepository;
     }
 
     @PostMapping("/admin/book/save")
@@ -172,13 +180,46 @@ public class BookController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         try {
+            // Fetch books using the existing repository method
             List<Books> books = bookRepository.advanceSearchBooks(request);
-            List<BookDTO> bookDTO = books.stream().filter(book -> !book.getStatus().equals(BookStatus.WEEDED) &&
-                    !book.getStatus().equals(BookStatus.ARCHIVED))
-                    .map(BookMapper::mapToBookDTO).toList();
-            return new ResponseEntity<>(bookDTO, HttpStatus.OK);
+
+            // Map of catalog ID to total copies from BookCatalog
+            Map<Integer, Integer> totalCopiesMap = bookCatalogRepository.findAll()
+                    .stream()
+                    .collect(Collectors.toMap(
+                            BookCatalog::getId,
+                            BookCatalog::getCopies));
+
+            // Map of catalog ID to number of LOANED_OUT books
+            Map<Integer, Long> loanedOutCopiesMap = books.stream()
+                    .filter(book -> BookStatus.LOANED_OUT.equals(book.getStatus()))
+                    .collect(Collectors.groupingBy(
+                            book -> book.getBookCatalog().getId(),
+                            Collectors.counting()));
+
+            // Filter out WEEDED and ARCHIVED books, deduplicate by isbn13, and map to DTO
+            List<BookDTO> bookDTOs = books.stream()
+                    .filter(book -> !book.getStatus().equals(BookStatus.WEEDED) &&
+                            !book.getStatus().equals(BookStatus.ARCHIVED))
+                    .collect(Collectors.collectingAndThen(
+                            Collectors.toMap(
+                                    Books::getIsbn13, // Deduplicate by isbn13
+                                    book -> {
+                                        BookDTO dto = BookMapper.mapToBookDTO(book);
+                                        int catalogId = book.getBookCatalog().getId();
+                                        int totalCopies = totalCopiesMap.getOrDefault(catalogId, 0);
+                                        long loanedOutCopies = loanedOutCopiesMap.getOrDefault(catalogId, 0L);
+                                        int availableCopies = totalCopies - (int) loanedOutCopies;
+                                        dto.getBookCatalog().setCopies(availableCopies < 0 ? 0 : availableCopies);
+                                        return dto;
+                                    },
+                                    (dto1, dto2) -> dto1,
+                                    LinkedHashMap::new),
+                            map -> new ArrayList<>(map.values())));
+
+            return new ResponseEntity<>(bookDTOs, HttpStatus.OK);
         } catch (Exception e) {
-            System.err.println("Error fetching all books by authorName: " + e.getMessage());
+            System.err.println("Error fetching books in advance search: " + e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
