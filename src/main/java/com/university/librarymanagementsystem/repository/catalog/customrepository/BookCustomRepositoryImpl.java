@@ -91,11 +91,7 @@ public class BookCustomRepositoryImpl implements BookCustomRepository {
                 case "isbn":
                     predicate = cb.or(
                             cb.like(cb.lower(book.get("isbn10")), "%" + searchTerm.toLowerCase() + "%"),
-                            cb.like(cb.lower(book.get("isbn13")), "%" + searchTerm.toLowerCase() + "%"),
-                            cb.equal(cb.function("SOUNDEX", String.class, book.get("isbn10")),
-                                    cb.function("SOUNDEX", String.class, cb.literal(searchTerm))),
-                            cb.equal(cb.function("SOUNDEX", String.class, book.get("isbn13")),
-                                    cb.function("SOUNDEX", String.class, cb.literal(searchTerm))));
+                            cb.like(cb.lower(book.get("isbn13")), "%" + searchTerm.toLowerCase() + "%"));
                     break;
                 default:
                     continue;
@@ -150,7 +146,7 @@ public class BookCustomRepositoryImpl implements BookCustomRepository {
 
         // Sections filter
         if (request.getSections() != null && !request.getSections().isEmpty()) {
-            predicates.add(section.get("sectionName").in(request.getSections()));
+            predicates.add(section.get("section_name").in(request.getSections()));
         }
 
         // Combine all predicates

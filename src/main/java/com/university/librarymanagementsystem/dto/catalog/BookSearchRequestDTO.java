@@ -19,7 +19,6 @@ public class BookSearchRequestDTO {
     private Boolean isAvailableOnly;
     private String individualLibrary;
     private String sortOrder;
-    private List<String> itemType;
     private List<String> sections;
     private List<String> collection;
 
