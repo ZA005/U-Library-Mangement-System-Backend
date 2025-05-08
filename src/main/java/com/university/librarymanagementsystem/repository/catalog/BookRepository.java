@@ -80,4 +80,6 @@ public interface BookRepository extends JpaRepository<Books, Integer>, BookCusto
 			"AND b.status = 'AVAILABLE'", nativeQuery = true)
 	List<Books> searchBooksBy4Query(@Param("query") String query);
 
+	@Query("SELECT b FROM Books b WHERE b.status = com.university.librarymanagementsystem.enums.BookStatus.AVAILABLE")
+	List<Books> findAvailableBooks();
 }

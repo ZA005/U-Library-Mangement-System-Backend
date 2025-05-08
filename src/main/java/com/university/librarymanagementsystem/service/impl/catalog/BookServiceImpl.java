@@ -102,7 +102,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public List<BookDTO> fetchAllBooks() {
-        List<Books> books = bookRepository.findAll();
+        List<Books> books = bookRepository.findAvailableBooks();
 
         // Map of catalog ID to total copies from BookCatalog
         Map<Integer, Integer> totalCopiesMap = bookCatalogRepository.findAll()
@@ -138,7 +138,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public List<BookDTO> fetchNewlyAcquiredBooks() {
-        List<Books> newlyAcquiredBooks = bookRepository.findAll();
+        List<Books> newlyAcquiredBooks = bookRepository.findAvailableBooks();
 
         // Reverse the list to maintain newly acquired order
         Collections.reverse(newlyAcquiredBooks);

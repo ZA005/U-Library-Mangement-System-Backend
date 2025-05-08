@@ -30,7 +30,7 @@ public interface LoanRepository extends JpaRepository<Loan, Integer> {
                     WHEN u.role = 'STUDENT' AND
                         (SELECT COUNT(*) FROM loan l WHERE l.account_id = a.account_id AND l.status = 'LOANED_OUT') >= 1
                     THEN 0
-                    WHEN u.role = 'FACULTY' AND
+                    WHEN u.role IN ('FACULTY', 'PROGRAMHEAD', 'DEAN') AND
                         (SELECT COUNT(*) FROM loan l WHERE l.account_id = a.account_id AND l.status = 'LOANED_OUT') >= 5
                     THEN 0
                     ELSE 1
