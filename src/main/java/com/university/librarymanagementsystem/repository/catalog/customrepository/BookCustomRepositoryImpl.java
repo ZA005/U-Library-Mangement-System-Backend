@@ -13,7 +13,8 @@ import com.university.librarymanagementsystem.entity.catalog.Location;
 import com.university.librarymanagementsystem.entity.catalog.Section;
 import com.university.librarymanagementsystem.entity.catalog.book.Author;
 import com.university.librarymanagementsystem.entity.catalog.book.Books;
-import com.university.librarymanagementsystem.entity.catalog.book.Categories;
+import com.university.librarymanagementsystem.entity.curriculum.BookReference;
+import com.university.librarymanagementsystem.entity.curriculum.Course;
 import com.university.librarymanagementsystem.enums.BookStatus;
 
 import jakarta.persistence.EntityManager;
@@ -37,6 +38,8 @@ public class BookCustomRepositoryImpl implements BookCustomRepository {
         Join<BookCatalog, Acquisition> acquisition = catalog.join("acquisition", JoinType.LEFT);
         Join<BookCatalog, Section> section = catalog.join("section", JoinType.LEFT);
         Join<Section, Location> location = section.join("location", JoinType.LEFT);
+        Join<Books, BookReference> bookReference = book.join("bookReferences", JoinType.LEFT);
+        Join<BookReference, Course> course = bookReference.join("course", JoinType.LEFT);
 
         List<Predicate> predicates = new ArrayList<>();
 
@@ -57,7 +60,6 @@ public class BookCustomRepositoryImpl implements BookCustomRepository {
                                     cb.function("SOUNDEX", String.class, cb.literal(searchTerm))),
                             cb.equal(cb.function("SOUNDEX", String.class, book.get("publisher")),
                                     cb.function("SOUNDEX", String.class, cb.literal(searchTerm))),
-                            // LIKE for substring matches
                             cb.like(cb.lower(book.get("title")), "%" + searchTerm.toLowerCase() + "%"),
                             cb.like(cb.lower(book.get("description")), "%" + searchTerm.toLowerCase() + "%"),
                             cb.like(cb.lower(author.get("name")), "%" + searchTerm.toLowerCase() + "%"),
@@ -82,16 +84,25 @@ public class BookCustomRepositoryImpl implements BookCustomRepository {
                                     cb.function("SOUNDEX", String.class, cb.literal(searchTerm))));
                     break;
                 case "insubjects":
-                    Join<Books, Categories> categories = book.join("books", JoinType.LEFT);
                     predicate = cb.or(
-                            cb.like(cb.lower(categories.get("name")), "%" + searchTerm.toLowerCase() + "%"),
-                            cb.equal(cb.function("SOUNDEX", String.class, categories.get("name")),
+                            cb.like(cb.lower(course.get("course_name")), "%" + searchTerm.toLowerCase() + "%"),
+                            cb.like(cb.lower(course.get("course_code")), "%" + searchTerm.toLowerCase() + "%"),
+                            cb.equal(cb.function("SOUNDEX", String.class, course.get("course_name")),
+                                    cb.function("SOUNDEX", String.class, cb.literal(searchTerm))),
+                            cb.equal(cb.function("SOUNDEX", String.class, course.get("course_code")),
                                     cb.function("SOUNDEX", String.class, cb.literal(searchTerm))));
                     break;
                 case "isbn":
+                    String normalizedSearchTerm = searchTerm.replaceAll("[^0-9Xx]", "");
+                    Expression<String> normalizedIsbn10 = cb.function("REPLACE", String.class, book.get("isbn10"),
+                            cb.literal("-"), cb.literal(""));
+                    Expression<String> normalizedIsbn13 = cb.function("REPLACE", String.class, book.get("isbn13"),
+                            cb.literal("-"), cb.literal(""));
                     predicate = cb.or(
-                            cb.like(cb.lower(book.get("isbn10")), "%" + searchTerm.toLowerCase() + "%"),
-                            cb.like(cb.lower(book.get("isbn13")), "%" + searchTerm.toLowerCase() + "%"));
+                            cb.equal(normalizedIsbn10, normalizedSearchTerm),
+                            cb.equal(normalizedIsbn13, normalizedSearchTerm),
+                            cb.like(normalizedIsbn10, "%" + normalizedSearchTerm + "%"),
+                            cb.like(normalizedIsbn13, "%" + normalizedSearchTerm + "%"));
                     break;
                 default:
                     continue;
@@ -119,7 +130,6 @@ public class BookCustomRepositoryImpl implements BookCustomRepository {
         }
 
         if (startDate != null) {
-            // Convert acquired_date (String) to LocalDate for comparison
             predicates.add(cb.greaterThanOrEqualTo(
                     cb.function("STR_TO_DATE", LocalDate.class, acquisition.get("acquired_date"),
                             cb.literal("%Y-%m-%d")),
@@ -136,23 +146,18 @@ public class BookCustomRepositoryImpl implements BookCustomRepository {
         }
         if (Boolean.TRUE.equals(request.getIsAvailableOnly())) {
             predicates.add(cb.equal(book.get("status"), BookStatus.AVAILABLE));
-            // AVAILABLE
         }
 
-        // Location filter (individualLibrary)
-        if (request.getIndividualLibrary() != null && !request.getIndividualLibrary().equals("All libraries")) {
-            predicates.add(cb.equal(location.get("name"), request.getIndividualLibrary()));
+        if (request.getLibrary() != null && !request.getLibrary().equals("All libraries")) {
+            predicates.add(cb.equal(location.get("name"), request.getLibrary()));
         }
 
-        // Sections filter
         if (request.getSections() != null && !request.getSections().isEmpty()) {
-            predicates.add(section.get("section_name").in(request.getSections()));
+            predicates.add(section.get("sectionName").in(request.getSections()));
         }
 
-        // Combine all predicates
         query.where(cb.and(predicates.toArray(new Predicate[0])));
 
-        // Sorting logic
         if ("Title A-Z".equalsIgnoreCase(request.getSortOrder())) {
             query.orderBy(cb.asc(book.get("title")));
         } else if ("Title Z-A".equalsIgnoreCase(request.getSortOrder())) {
@@ -169,5 +174,4 @@ public class BookCustomRepositoryImpl implements BookCustomRepository {
 
         return entityManager.createQuery(query).getResultList();
     }
-
 }

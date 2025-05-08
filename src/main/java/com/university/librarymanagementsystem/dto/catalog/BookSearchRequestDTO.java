@@ -17,7 +17,7 @@ public class BookSearchRequestDTO {
     private String yearRange;
     private String language;
     private Boolean isAvailableOnly;
-    private String individualLibrary;
+    private String library;
     private String sortOrder;
     private List<String> sections;
     private List<String> collection;
