@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.university.librarymanagementsystem.dto.user.PasswordChangeRequestDTO;
 import com.university.librarymanagementsystem.dto.user.RequestResponse;
 import com.university.librarymanagementsystem.service.user.AuthenticationService;
 
@@ -45,9 +46,11 @@ public class AuthController {
     }
 
     @PostMapping("/auth/reset-password/{user_id}")
-    public ResponseEntity<RequestResponse> resetPassword(@PathVariable String user_id,
-            @RequestBody RequestResponse password) {
-        RequestResponse response = auth.resetPassword(user_id, password);
+    public ResponseEntity<RequestResponse> resetPassword(
+            @PathVariable String user_id,
+            @RequestBody PasswordChangeRequestDTO passwordRequest) {
+
+        RequestResponse response = auth.resetPassword(user_id, passwordRequest);
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatusCode()));
     }
 }

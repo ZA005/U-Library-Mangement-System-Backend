@@ -7,6 +7,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.university.librarymanagementsystem.dto.user.PasswordChangeRequestDTO;
 import com.university.librarymanagementsystem.dto.user.RequestResponse;
 import com.university.librarymanagementsystem.entity.user.Account;
 import com.university.librarymanagementsystem.entity.user.User;
@@ -161,11 +162,10 @@ public class AuthenticationService {
         System.out.println("AccountRepository Bean Exists: " + (accountRepo != null));
     }
 
-    public RequestResponse resetPassword(String user_id, RequestResponse newPassword) {
+    public RequestResponse resetPassword(String user_id, PasswordChangeRequestDTO request) {
         RequestResponse response = new RequestResponse();
 
         try {
-
             // Check if the user exists
             boolean isExist = userRepo.existsById(user_id);
             if (!isExist) {
@@ -178,13 +178,24 @@ public class AuthenticationService {
             Integer isActive = accountRepo.existByUserID(user_id);
             if (isActive != 1) {
                 response.setStatusCode(403);
-                response.setMessage("User is not activated. Please activate your account first.");
+                response.setMessage("User is not activated.");
                 return response;
             }
 
-            // Update the password
             Account account = accountRepo.findByUserID(user_id).orElseThrow();
-            account.setPassword(passwordEncoder.encode(newPassword.getPassword()));
+
+            // If current password is provided, validate it (change mode)
+            if (request.getCurrentPassword() != null && !request.getCurrentPassword().isBlank()) {
+                boolean matches = passwordEncoder.matches(request.getCurrentPassword(), account.getPassword());
+                if (!matches) {
+                    response.setStatusCode(401);
+                    response.setMessage("Current password is incorrect.");
+                    return response;
+                }
+            }
+
+            // Update password
+            account.setPassword(passwordEncoder.encode(request.getPassword()));
             accountRepo.save(account);
 
             response.setStatusCode(200);
@@ -192,7 +203,7 @@ public class AuthenticationService {
 
         } catch (Exception e) {
             response.setStatusCode(500);
-            response.setMessage("Error resetting password: " + e.getMessage());
+            response.setMessage("Error updating password: " + e.getMessage());
         }
 
         return response;
