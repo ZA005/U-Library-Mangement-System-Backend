@@ -30,8 +30,9 @@ public class UserController {
     private AccountService accountService;
     private OTPService otp;
 
-    @GetMapping("/verify/{id}")
-    public ResponseEntity<UserDTO> sendOTP(@PathVariable("id") String user_id) {
+    @GetMapping("/verify/{id}/{isActivation}")
+    public ResponseEntity<UserDTO> sendOTP(@PathVariable("id") String user_id,
+            @PathVariable("isActivation") boolean isActivation) {
         try {
             UserDTO user = service.fetchUserById(user_id);
             System.out.println("USER:" + user);
@@ -46,7 +47,7 @@ public class UserController {
             otp.storeOTP(user.getEmailAdd(), otpCode);
             System.out.println("RUN3");
 
-            otp.sendOTPEmail(user.getEmailAdd(), otpCode);
+            otp.sendOTPEmail(user.getEmailAdd(), otpCode, isActivation);
             System.out.println("RUN4");
 
             // Return the user with a 200 OK status
@@ -118,6 +119,31 @@ public class UserController {
             errorResponse.put("code", "INTERNAL_SERVER_ERROR");
             errorResponse.put("details", ex.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    @GetMapping("/verify/reset-password/{id}/{isActivation}")
+    public ResponseEntity<UserDTO> sendResetPasswordOTP(@PathVariable("id") String user_id,
+            @PathVariable("isActivation") boolean isActivation) {
+
+        try {
+            UserDTO user = service.fetchUserById(user_id);
+
+            if (user == null) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 404 if user not found
+            }
+
+            String otpCode = otp.generateOTP();
+
+            otp.storeOTP(user.getEmailAdd(), otpCode);
+
+            otp.sendOTPEmail(user.getEmailAdd(), otpCode, isActivation);
+
+            // Return the user with a 200 OK status
+            return new ResponseEntity<>(user, HttpStatus.OK);
+        } catch (Exception e) {
+            // Return an error response if something goes wrong
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

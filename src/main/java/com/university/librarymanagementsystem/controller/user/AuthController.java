@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.university.librarymanagementsystem.dto.user.PasswordChangeRequestDTO;
 import com.university.librarymanagementsystem.dto.user.RequestResponse;
 import com.university.librarymanagementsystem.service.user.AuthenticationService;
 
@@ -37,9 +38,19 @@ public class AuthController {
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatusCode()));
     }
 
-    @GetMapping("/auth/verify/{user_id}")
-    public ResponseEntity<RequestResponse> isActivated(@PathVariable String user_id) {
-        RequestResponse response = auth.isActivated(user_id);
+    @GetMapping("/auth/verify/{user_id}/{isActivation}")
+    public ResponseEntity<RequestResponse> isActivated(@PathVariable String user_id,
+            @PathVariable boolean isActivation) {
+        RequestResponse response = auth.isActivated(user_id, isActivation);
         return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+
+    @PostMapping("/auth/reset-password/{user_id}")
+    public ResponseEntity<RequestResponse> resetPassword(
+            @PathVariable String user_id,
+            @RequestBody PasswordChangeRequestDTO passwordRequest) {
+
+        RequestResponse response = auth.resetPassword(user_id, passwordRequest);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatusCode()));
     }
 }

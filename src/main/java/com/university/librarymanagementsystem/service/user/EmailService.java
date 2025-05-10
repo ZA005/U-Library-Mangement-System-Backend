@@ -91,30 +91,24 @@ public class EmailService {
     }
 
     @Async
-    public void sendOTPEmail(String email, String otp) {
-        System.out.println("RUN5" + email);
-        System.out.println("RUN6" + otp);
+    public void sendOTPEmail(String email, String otp, boolean isActivation) {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
-            System.out.println("RUN7");
-
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            System.out.println("RUN8");
 
             helper.setTo(email);
-            System.out.println("RUN9");
-
             helper.setSubject("University Library Management System - OTP Verification");
-            System.out.println("RUN10 ");
 
-            String emailContent = OTP_EMAIL_TEMPLATE.replace("{{OTP_CODE}}", otp);
-            System.out.println("RUN11 ");
+            String purposeMessage = isActivation
+                    ? "Please enter this code to activate your account. This OTP is valid for a limited time."
+                    : "Please enter this code to reset your password. This OTP is valid for a limited time.";
+
+            String emailContent = OTP_EMAIL_TEMPLATE
+                    .replace("{{OTP_CODE}}", otp)
+                    .replace("{{PURPOSE_MESSAGE}}", purposeMessage);
 
             helper.setText(emailContent, true);
-            System.out.println("RUN12 ");
-
             mailSender.send(mimeMessage);
-            System.out.println("RUN13 ");
 
         } catch (Exception e) {
             System.err.println("Failed to send OTP email: " + e.getMessage());
@@ -147,7 +141,7 @@ public class EmailService {
                             <p>Dear User,</p>
                             <p>Here is your One-Time Password (OTP) for secure access to your account:</p>
                             <p class="otp">{{OTP_CODE}}</p>
-                            <p>Please enter this code to activate your account. This OTP is valid for a limited time.</p>
+                            <p>{{PURPOSE_MESSAGE}}</p>
                             <p>If you did not request this OTP, please contact our support team immediately.</p>
                             <p>Best regards,</p>
                             <p><strong>University Library Management System</strong></p>

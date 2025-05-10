@@ -7,6 +7,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.university.librarymanagementsystem.dto.user.PasswordChangeRequestDTO;
 import com.university.librarymanagementsystem.dto.user.RequestResponse;
 import com.university.librarymanagementsystem.entity.user.Account;
 import com.university.librarymanagementsystem.entity.user.User;
@@ -33,29 +34,41 @@ public class AuthenticationService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public RequestResponse isActivated(String user_id) {
-        System.out.println("USER ID:" + user_id);
+    public RequestResponse isActivated(String user_id, boolean isActivation) {
+        System.out.println("USER ID: " + user_id + ", isActivation: " + isActivation);
         RequestResponse response = new RequestResponse();
 
         try {
-            // Check if the user is activated
-            Integer isActive = accountRepo.existByUserID(user_id);
-            if (isActive == 1) {
-                response.setStatusCode(409);
-                response.setMessage("User is already activated.");
-                return response;
-            }
-
             // Check if the user exists
-            Boolean isExist = userRepo.existsById(user_id);
+            boolean isExist = userRepo.existsById(user_id);
             if (!isExist) {
                 response.setStatusCode(404);
-                response.setMessage("User ID not found");
+                response.setMessage("User ID not found.");
                 return response;
             }
 
-            response.setStatusCode(200);
-            response.setMessage("User is not activated.");
+            // Check if the user is activated
+            Integer isActive = accountRepo.existByUserID(user_id);
+
+            if (isActivation) {
+                // Register flow: Check for activation
+                if (isActive == 1) {
+                    response.setStatusCode(409);
+                    response.setMessage("User is already activated.");
+                    return response;
+                }
+                response.setStatusCode(200);
+                response.setMessage("User is not activated.");
+            } else {
+                // Reset password flow: User must be activated
+                if (isActive != 1) {
+                    response.setStatusCode(403);
+                    response.setMessage("User is not activated. Please activate your account first.");
+                    return response;
+                }
+                response.setStatusCode(200);
+                response.setMessage("User is activated and eligible for password reset.");
+            }
         } catch (Exception e) {
             response.setStatusCode(500);
             response.setMessage("Error checking activation: " + e.getMessage());
@@ -147,6 +160,53 @@ public class AuthenticationService {
     @PostConstruct
     public void checkBeans() {
         System.out.println("AccountRepository Bean Exists: " + (accountRepo != null));
+    }
+
+    public RequestResponse resetPassword(String user_id, PasswordChangeRequestDTO request) {
+        RequestResponse response = new RequestResponse();
+
+        try {
+            // Check if the user exists
+            boolean isExist = userRepo.existsById(user_id);
+            if (!isExist) {
+                response.setStatusCode(404);
+                response.setMessage("User ID not found.");
+                return response;
+            }
+
+            // Check if the user is activated
+            Integer isActive = accountRepo.existByUserID(user_id);
+            if (isActive != 1) {
+                response.setStatusCode(403);
+                response.setMessage("User is not activated.");
+                return response;
+            }
+
+            Account account = accountRepo.findByUserID(user_id).orElseThrow();
+
+            // If current password is provided, validate it (change mode)
+            if (request.getCurrentPassword() != null && !request.getCurrentPassword().isBlank()) {
+                boolean matches = passwordEncoder.matches(request.getCurrentPassword(), account.getPassword());
+                if (!matches) {
+                    response.setStatusCode(401);
+                    response.setMessage("Current password is incorrect.");
+                    return response;
+                }
+            }
+
+            // Update password
+            account.setPassword(passwordEncoder.encode(request.getPassword()));
+            accountRepo.save(account);
+
+            response.setStatusCode(200);
+            response.setMessage("Password updated successfully.");
+
+        } catch (Exception e) {
+            response.setStatusCode(500);
+            response.setMessage("Error updating password: " + e.getMessage());
+        }
+
+        return response;
     }
 
 }
