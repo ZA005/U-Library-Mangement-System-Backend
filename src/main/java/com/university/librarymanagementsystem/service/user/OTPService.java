@@ -37,8 +37,8 @@ public class OTPService {
         return otp.equals(storedOtp);
     }
 
-    public void sendOTPEmail(String email, String otp) {
-        emailService.sendOTPEmail(email, otp);
+    public void sendOTPEmail(String email, String otp, boolean isActivation) {
+        emailService.sendOTPEmail(email, otp, isActivation);
     }
 
 }

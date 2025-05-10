@@ -37,9 +37,17 @@ public class AuthController {
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatusCode()));
     }
 
-    @GetMapping("/auth/verify/{user_id}")
-    public ResponseEntity<RequestResponse> isActivated(@PathVariable String user_id) {
-        RequestResponse response = auth.isActivated(user_id);
+    @GetMapping("/auth/verify/{user_id}/{isActivation}")
+    public ResponseEntity<RequestResponse> isActivated(@PathVariable String user_id,
+            @PathVariable boolean isActivation) {
+        RequestResponse response = auth.isActivated(user_id, isActivation);
         return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+
+    @PostMapping("/auth/reset-password/{user_id}")
+    public ResponseEntity<RequestResponse> resetPassword(@PathVariable String user_id,
+            @RequestBody RequestResponse password) {
+        RequestResponse response = auth.resetPassword(user_id, password);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatusCode()));
     }
 }
