@@ -27,12 +27,16 @@ public class CurriculumServiceImpl implements CurriculumService {
     @Override
     public List<CurriculumDTO> uploadCurriculum(List<CurriculumDTO> currDTO) {
 
+        System.out.println("CURRICULUM DTO: " + currDTO);
+
         List<Curriculum> curriculums = currDTO.stream().map(curriculumDTO -> {
             Program program = programRepository.findById(curriculumDTO.getProgram_id())
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Program with ID " + curriculumDTO.getProgram_id() + " not found!"));
 
             System.out.println("Program ID: " + program.getId());
+            System.out.println("Curriculum ID: " + curriculumDTO.getId());
+
             Curriculum curriculum = CurriculumMapper.mapToCurriculum(curriculumDTO);
             curriculum.setProgram(program);
             return curriculum;
@@ -43,19 +47,14 @@ public class CurriculumServiceImpl implements CurriculumService {
 
         for (Curriculum curriculum : curriculums) {
             Curriculum existingCurriculum = currRepo.findById(curriculum.getId()).orElse(null);
-            // System.out.println("Exisiting Curriculum " + existingCurriculum.getId());
             if (existingCurriculum != null) {
-                // Skip if all relevant fields (revision_no, effectivity_sem, effectivity_sy)
-                // are the same
                 if (!(existingCurriculum.getRevision_no() == curriculum.getRevision_no() &&
-                        existingCurriculum.getEffectivity_sem() == curriculum.getEffectivity_sem() &&
                         existingCurriculum.getEffectivity_sy().equals(curriculum.getEffectivity_sy()))) {
                     curriculumToUpdate.add(curriculum);
                 }
             } else {
                 curriculumToSave.add(curriculum);
             }
-
         }
 
         List<Curriculum> savedCurriculum = new ArrayList<>();

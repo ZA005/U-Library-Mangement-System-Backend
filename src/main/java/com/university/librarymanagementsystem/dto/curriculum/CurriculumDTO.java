@@ -21,7 +21,6 @@ public class CurriculumDTO {
     private String program_description;
 
     private int revision_no;
-    private int effectivity_sem;
     private String effectivity_sy;
     private byte status;
 }
