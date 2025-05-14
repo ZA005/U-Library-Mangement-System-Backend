@@ -15,7 +15,7 @@ public class CurriculumMapper {
                 curr.getProgram().getCode(),
                 curr.getProgram().getDescription(),
                 curr.getRevision_no(),
-                curr.getEffectivity_sem(),
+                // curr.getEffectivity_sem(),
                 curr.getEffectivity_sy(),
                 curr.getStatus());
     }
@@ -27,7 +27,7 @@ public class CurriculumMapper {
                 currDTO.getId(),
                 program,
                 currDTO.getRevision_no(),
-                currDTO.getEffectivity_sem(),
+                // currDTO.getEffectivity_sem(),
                 currDTO.getEffectivity_sy(),
                 currDTO.getStatus());
     }
