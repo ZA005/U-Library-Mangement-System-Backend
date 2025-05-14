@@ -1,7 +1,9 @@
 package com.university.librarymanagementsystem.controller.user;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.university.librarymanagementsystem.dto.user.AccountDTO;
 import com.university.librarymanagementsystem.dto.user.OtpVerificationDTO;
 import com.university.librarymanagementsystem.dto.user.UserDTO;
+import com.university.librarymanagementsystem.entity.user.User;
+import com.university.librarymanagementsystem.mapper.user.UserMapper;
 import com.university.librarymanagementsystem.service.user.AccountService;
 import com.university.librarymanagementsystem.service.user.OTPService;
 import com.university.librarymanagementsystem.service.user.UserService;
@@ -145,5 +149,20 @@ public class UserController {
             // Return an error response if something goes wrong
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @PostMapping("/public/users/upload")
+    public ResponseEntity<List<UserDTO>> uploadUsers(@RequestBody List<UserDTO> userDTOs) {
+        List<User> users = userDTOs.stream()
+                .map(UserMapper::mapToUser)
+                .collect(Collectors.toList());
+
+        for (User user : users) {
+            System.out.println("Processing User - ID: " + user.getId() + ", Name: " + user.getFirstName() + " "
+                    + user.getLastName());
+        }
+
+        List<UserDTO> uploadedUsers = service.uploadUsers(userDTOs);
+        return new ResponseEntity<>(uploadedUsers, HttpStatus.CREATED);
     }
 }
