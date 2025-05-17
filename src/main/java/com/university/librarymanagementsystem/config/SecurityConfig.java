@@ -43,7 +43,7 @@ public class SecurityConfig {
                                 .hasAnyAuthority("LIBRARIAN", "LIBRARYDIRECTOR")
                                 .requestMatchers("/user/**").hasAnyAuthority("STUDENT", "FACULTY")
                                 .requestMatchers("/adminuser/**").hasAnyAuthority("LIBRARIAN", "STUDENT",
-                                        "LIBRARYDIRECTOR", "PROGRAMHEAD", "FACULTY")
+                                        "LIBRARYDIRECTOR", "PROGRAMHEAD", "FACULTY", "DEAN")
                                 .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(
